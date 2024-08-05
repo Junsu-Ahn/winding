@@ -24,27 +24,25 @@
                 </form>
             </div>
             <div class="user_page">
-
                 <a sec:authorize="isAuthenticated()" href="/member/admin/memberList">
                     <img th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}"
                          th:src="@{'https://github.com/Junsu-Ahn/cookers/assets/134615615/8634d640-17fe-4371-899a-0abdde174a48'}" alt="관리자 페이지">
                 </a>
 
                 <a sec:authorize="isAnonymous()" href="/member/login">
-                    <img src="https://github.com/Junsu-Ahn/cookers/assets/156152342/b0693f56-339e-4b19-9c69-49bce1e6a43f" alt="로그인">
+                    로그인
                 </a>
                 <a sec:authorize="isAuthenticated()" id="userIcon" style="cursor: pointer;">
                     <img th:src="${currentMember != null && currentMember.profileImg != null ? currentMember.profileImg : 'https://github.com/Junsu-Ahn/cookers/assets/134615615/5c0de0e0-b917-47ae-94d4-d8ad366dce7f'}" alt="프로필">
                 </a>
+
+                <a sec:authorize="isAuthenticated()" href="/member/logout">로그아웃</a>
+
+                <a sec:authorize="isAuthenticated()" href="/posts/create">
+                    게시글 작성
                 </a>
-                <div class="arrow-up" th:if="${currentMember} != null"></div>
-                <ul class="user_two_menu" th:if="${currentMember} != null">
-                    <li><a sec:authorize="isAuthenticated()" th:href="@{'/member/' + ${currentMember.nickname}}">레시피 노트</a></li>
-                    <li><a sec:authorize="isAuthenticated()" th:href="@{/member/edit}">회원 정보 수정</a></li>
-                    <li><a href="/member/logout">로그아웃</a></li>
-                </ul>
-                <a href="/recipe/recipe_create_form"><img src="https://github.com/Junsu-Ahn/cookers/assets/156152342/00255179-03e9-4a7e-a8c8-d49ef5db619c" alt="글쓰기"></a>
             </div>
+
         </div>
     </div>
     <div class="middle_container">
