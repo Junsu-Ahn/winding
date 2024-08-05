@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Post Detail</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Post Detail</h1>
+    <div class="card">
+        <div class="card-header">
+            <h2 th:text="${post.title}"></h2>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Description</h5>
+            <p class="card-text" th:text="${post.description}"></p>
+
+            <h5 class="card-title">Location</h5>
+            <p class="card-text" th:text="${post.location}"></p>
+
+            <h5 class="card-title">Author</h5>
+            <p class="card-text" th:text="${post.author}"></p>
+
+            <h5 class="card-title">Map</h5>
+            <a th:href="${post.mapUrl}" target="_blank" class="btn btn-primary">View Map</a>
+
+            <h5 class="card-title mt-3">Image</h5>
+            <img th:src="@{${post.imageUrl} ?: '/default-thumbnail.jpg'}" alt="Post Image" class="img-fluid">
+        </div>
+    </div>
+    <a href="/posts" class="btn btn-secondary mt-3">Back to Post List</a>
+</div>
+</body>
+</html>

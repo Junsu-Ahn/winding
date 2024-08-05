@@ -1,0 +1,61 @@
+<head xmlns:th="http://www.w3.org/1999/xhtml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>다함께 와인딩</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" th:href="@{/css/Login.css}">
+</head>
+<body>
+<div class="top_bar_section">
+    <div class="main_logo">
+        <div class='box'>
+            <div class='title'><a href="/"><img src="https://github.com/user-attachments/assets/3981d981-b28a-402e-92a2-9da18d9f00b2" alt="메인 로고"></a></div>
+        </div>
+    </div>
+</div>
+<form th:action="@{/member/login}" method="POST">
+    <div style="margin-bottom:10px;">
+        <span style="font-weight: 500;">아이디</span>
+        <input type="text" name="username" placeholder="아이디" required>
+    </div>
+    <div>
+        <span style="font-weight: 500;">비밀번호</span>
+        <input type="password" name="password" placeholder="비밀번호" required>
+    </div>
+    <div>
+        <button type="submit">로그인</button>
+    </div>
+    <div class="signup">
+        <a href="/member/findId">
+            아이디 찾기
+        </a>
+        <div> | </div>
+        <a href="/member/findPw">
+            비밀번호 찾기
+        </a>
+        <div> | </div>
+        <a href="/member/signup">
+            회원가입
+        </a>
+    </div>
+
+    <div class="login">
+        <a href="/oauth2/authorization/kakao">
+            <div class="logo"><img src="https://github.com/Junsu-Ahn/cookers/assets/156152342/6183c7c2-d209-4d1a-8276-9232162d1226" alt="카카오"></div>
+            <div class="name">카카오 로그인</div>
+        </a>
+        <a href="/oauth2/authorization/naver">
+            <div class="logo"><img src="https://github.com/Junsu-Ahn/cookers/assets/156152342/3fd07912-a828-4c37-878c-ece4a5feffb4" alt="네이버"></div>
+            <div class="name">네이버 로그인</div>
+        </a>
+        <a href="/oauth2/authorization/google">
+            <div class="logo"><img src="https://github.com/Junsu-Ahn/cookers/assets/156152342/b210eae2-e515-4cdf-93ce-3c445e44b727" alt="구글"></div>
+            <div class="name">구글 로그인</div>
+        </a>
+    </div>
+
+
+
+</form>
+</body>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Post List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        .thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<section class="container mx-auto p-5">
+    <h1 class="text-2xl font-bold text-center mb-5">Post List</h1>
+    <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <li th:each="post : ${posts}" class="flex flex-col group border border-gray-300 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+            <a th:href="@{|/post/detail/${post.id}|}">
+                <img th:src="@{${post.thumbnailImageUrl} ?: '/images/default-thumbnail.jpg'}" alt="Post Image" class="thumbnail">
+            </a>
+            <div class="p-4">
+                <a th:href="@{|/post/detail/${post.id}|}" class="text-lg font-semibold text-blue-600 hover:underline" th:text="${post.title}"></a>
+                <p class="text-gray-600 mt-2" th:text="${post.description}"></p>
+            </div>
+        </li>
+    </ul>
+
+    <!-- 페이징 처리 시작 -->
+    <div class="flex justify-center mt-5">
+        <ul class="flex list-none">
+            <li th:classappend="${paging.hasPrevious ? '' : 'disabled'}">
+                <a class="px-3 py-1 border border-gray-300 rounded-l-lg cursor-pointer" th:href="${paging.hasPrevious ? @{|/post/list?page=${paging.number - 1}|} : '#'}">
+                    <span>&lt;</span>
+                </a>
+            </li>
+
+            <li th:each="page : ${#numbers.sequence(0, paging.totalPages-1)}"
+                th:if="${page >= paging.number-5 and page <= paging.number+5}"
+                th:classappend="${page == paging.number ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}"
+                class="px-3 py-1 border border-gray-300 cursor-pointer"
+            >
+                <a th:href="@{|/post/list?page=${page}|}" th:text="${page + 1}"></a>
+            </li>
+
+            <li th:classappend="${paging.hasNext ? '' : 'disabled'}">
+                <a class="px-3 py-1 border border-gray-300 rounded-r-lg cursor-pointer" th:href="${paging.hasNext ? @{|/post/list?page=${paging.number + 1}|} : '#'}">
+                    <span>&gt;</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".page-link").on("click", function () {
+            $("#page").val($(this).data("page"));
+            $("#searchForm").submit();
+        });
+
+        $("#btn_search").on("click", function () {
+            $("#kw").val($("#search_kw").val());
+            $("#page").val(0);
+            $("#searchForm").submit();
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,581 @@
+/* 버튼 커스텀 */
+.custom-btn {
+  box-sizing: border-box;
+  width: 50px;
+  height: 50px;
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px 0;
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+   box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5),
+   7px 7px 20px 0px rgba(0,0,0,.1),
+   4px 4px 5px 0px rgba(0,0,0,.1);
+  outline: none;
+  margin-left: 10px;
+}
+
+
+/* 13 */
+.btn-13 {
+  background-color: #89d8d3;
+background-image: linear-gradient(315deg, #89d8d3 0%, #03c8a8 74%);
+  border: none;
+  z-index: 1;
+}
+.btn-13:after {
+  position: absolute;
+  content: "";
+  width: 100%;
+  height: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: 5px;
+   background-color: #4dccc6;
+background-image: linear-gradient(315deg, #4dccc6 0%, #96e4df 74%);
+  box-shadow:
+   -7px -7px 20px 0px #fff9,
+   -4px -4px 5px 0px #fff9,
+   7px 7px 20px 0px #0002,
+   4px 4px 5px 0px #0001;
+  transition: all 0.3s ease;
+}
+.btn-13:hover {
+  color: #000;
+}
+.btn-13:hover:after {
+  top: 0;
+  height: 100%;
+
+}
+.btn-13:active {
+  top: 2px;
+}
+
+.nav_bar > .before_after > li:nth-child(1)::before{
+  content: "|";
+}
+.nav_bar > .before_after > li:nth-child(1)::after{
+  content: "|";
+}
+.nav_bar > .before_after > li:nth-child(2)::after{
+  content: "|";
+}
+.nav_bar > .before_after > li:nth-child(4)::before{
+  content: "|";
+}
+.nav_bar > .before_after > li:nth-child(4)::after{
+  content: "|";
+}
+
+
+/* 노멀라이즈 */
+body, ul, li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a{
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 탑바 제작 */
+.top_bar_section {
+
+}
+
+.top_bar_section > .top_container {
+padding-top: 20px;
+}
+
+.top_bar_section > .top_container > .nav_bar{
+  width: 1240px;
+  height: 110px;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.top_bar_section > .top_container > .nav_bar > .main_logo {
+  flex-grow: 1;
+  flex-basis: 0;
+  display: flex;
+  justify-content: start;
+  padding-right: 80px;
+}
+
+.top_bar_section > .top_container > .nav_bar > .main_logo > a {
+  display: inline-block;
+}
+
+.top_bar_section > .top_container > .nav_bar > .main_logo > a >img{
+  width: 250px;
+  height: 130px;
+}
+
+.top_bar_section > .top_container > .nav_bar > .search_bar {
+  display: flex;
+  padding-top: 20px;
+}
+
+.top_bar_section > .top_container > .nav_bar > .search_bar >form{
+  flex-grow: 1;
+  flex-basis: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.top_bar_section > .top_container >.nav_bar > .search_bar > form > input{
+  width: 400px;
+  height: 50px;
+  font-size: 20px;
+  border: 0;
+  border-radius: 15px;
+  outline: none;
+  padding-left: 10px;
+  background-color: rgb(233, 233, 233);
+}
+
+.top_bar_section > .top_container >.nav_bar > .search_bar > input{
+  width: 400px;
+  height: 50px;
+  font-size: 20px;
+  border: 0;
+  border-radius: 15px;
+  outline: none;
+  padding-left: 10px;
+  background-color: rgb(233, 233, 233);
+}
+
+.top_bar_section > .top_container > .nav_bar > .user_page {
+  flex-grow: 1;
+  flex-basis: 0;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 20px;
+  position: relative;
+}
+
+.top_bar_section > .top_container > .nav_bar > .user_page > a > img {
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 50px;
+}
+
+/*프로필 2차 메뉴*/
+.user_page .user_two_menu, .user_page .arrow-up {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 200ms linear, visibility 0s linear 200ms;
+    position: absolute;
+    z-index: 2;
+}
+
+.user_page .user_two_menu.visible, .user_page .arrow-up.visible {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 200ms linear, visibility 0s linear 0s;
+}
+
+.user_page .user_two_menu {
+    border: 2px solid #85B054;
+    left: 52%;
+    top: 100px; /* 위치 조정 */
+}
+
+.user_page .user_two_menu > li {
+    border-top: 1px solid #85B054;
+  border-bottom: 1px solid #85B054;
+    background-color: white;
+    display: flex;
+    text-align: center;
+    font-weight: bold;
+}
+
+.user_page .user_two_menu > li > a {
+    flex-grow: 1;
+    flex-basis: 0;
+    padding: 10px;
+}
+
+.user_page .user_two_menu > li > a:hover {
+    background-color: #eaeaea;
+}
+
+.user_page .arrow-up {
+    position: absolute;
+            left: 66%;
+            bottom: 10px; /* 위치 조정 */
+            width: 0;
+            height: 0;
+            border-bottom: 20px solid #85B054; /* 화살표 */
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+}
+
+.top_bar_section > .top_container > .nav_bar >.user_page > a > img {
+  width: 90px;
+}
+
+.top_bar_section > .top_container > .nav_bar >.user_page > a> img{
+  width: 50px;
+  height: 50px;
+}
+
+
+
+
+.top_bar_section > .middle_container > .nav_bar > ul{
+  display: flex;
+  width: 1240px;
+  height: 60px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li{
+  box-sizing: border-box;
+  flex-grow: 1;
+  flex-basis: 0;
+  text-align: center;
+  align-content: center;
+  position:relative;
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li:hover {
+    transition: background-color 0.3s, opacity 1s;
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li > a{
+  display: inline-block;
+  width: 93%;
+  align-content: center;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li > a {
+  text-decoration: none;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 600;
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li >a::before {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left:50%;
+  width: 0px;
+  height: 3px;
+  background-color: #792626;
+  transition: width 0.2s ease-in-out, left 0.2s ease-in-out;
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li > a:hover::before {
+  width: 100%;
+  left: 0;
+}
+
+
+.top_bar_section > .middle_container > .nav_bar > ul > li > ul{
+  position:absolute;
+  top : 100%;
+  left: -91%;
+  width: 1183px;
+  border-radius: 15px;
+  visibility:hidden;
+  opacity:0;
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li > ul > li{
+  display: flex;
+
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li > ul > li > a{
+  display: inline-block;
+  width: 100%;
+  padding: 20px 0;
+  align-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: white;
+  border-radius: 5px;
+  transition: background 0.3s, transform 0.3s;
+
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li > ul > li > a:hover{
+
+  background-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1);
+}
+
+.top_bar_section > .middle_container > .nav_bar > ul > li:nth-child(2):hover > ul{
+  visibility:visible;
+  transition:linear 500ms;
+  opacity:1;
+  z-index: 2;
+  background-color:  rgba(0,0,0,0.7);
+  transform: scale(1.05);
+}
+
+/* 메인메뉴 배너 슬라이드*/
+
+.slider{
+  text-align : center;
+}
+.slide img {
+    width: 1240px; /* 이미지의 최대 너비를 100%로 설정 */
+    height: 350px; /* 비율에 맞추어 자동으로 높이를 조정 */
+    object-fit: cover;
+}
+
+
+.bottom_bar_section {
+    margin-bottom: 50px; /* 배너 아래 간격 추가 */
+}
+
+/* 인기 레시피*/
+.slider_container {
+    position: relative;
+    overflow: hidden;
+    margin-top: 20px;
+  background-color: #f8f8f8;
+
+}
+
+.slider_wrapper {
+    display: flex;
+    padding-left: 10px;
+}
+
+.slider_track {
+   display: flex;
+    justify-content: center;
+    width: fit-content;
+    margin: 0 auto;
+  transition: transform 0.5s ease;
+}
+
+.recipe_card {
+    flex: 0 0 auto;
+    margin-right: 20px;
+    width: 250px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+    text-align: center;
+}
+
+.recipe_card img {
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+.recipe_card h3 {
+    margin-top: 10px;
+    font-size: 18px;
+}
+
+.recipe_card p {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+.prev_btn, .next_btn {
+    position: absolute;
+    top: 50%;
+    transform:
+translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 30px;
+    color: #6e1a0b;
+    cursor: pointer;
+}
+.next_btn {
+    right: 0;
+}
+
+.recipe_section {
+    background-color: rgba(255, 255, 255, 0.6);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+    margin-bottom: 45px;
+    width: 1240px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.recipe_section h2 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #5D8A5D;
+    text-transform: uppercase; /* 대문자로 변환 */
+    margin-bottom: 20px;
+    text-align : center;
+
+}
+
+
+
+/* 인기 레시피와 최신 레시피 사이의 간격을 조정 */
+
+/* 전체 컨테이너 스타일 */
+.popular-recipes-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* 카드 간격 */
+    justify-content: space-between; /* 카드 사이 간격을 균등하게 분배 */
+    margin: 20px;
+    width: 1240px;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 인기 레시피 섹션 스타일 */
+.popular-recipes-section {
+    text-align: center;
+    margin: 140px 0; /* 섹션 위아래 여백 */
+}
+
+.popular-recipes-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333; /* 제목 색상 */
+}
+
+/* 인기 레시피 카드 스타일 */
+.popular-recipe-card {
+    background-color: #f5f5f5; /* 배경색 */
+    padding: 20px;
+    margin: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+    flex: 1 1 calc(50% - 40px); /* 두 개씩 정렬하기 위한 너비, 간격 조정 */
+    display: flex; /* 내부 요소들을 플렉스로 정렬 */
+    align-items: center; /* 이미지와 텍스트를 수직으로 가운데 정렬 */
+    box-sizing: border-box; /* 여백을 포함한 크기 조정 */
+}
+
+/* 인기 레시피 카드 이미지 스타일 */
+.popular-recipe-card .recipe-image img {
+    width: 100px; /* 이미지 너비 */
+    height: 100px; /* 이미지 높이 */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px; /* 이미지 모서리 둥글게 */
+}
+
+/* 인기 레시피 카드 정보 스타일 */
+.popular-recipe-card .recipe-info {
+    margin-left: 20px; /* 이미지와 텍스트 간격 */
+    margin-right: 20px;
+    width: 300px;
+}
+
+.popular-recipe-card .recipe-info h3 {
+    margin-bottom: 10px; /* 제목 아래 여백 */
+    margin-top: 0;
+}
+
+.popular-recipe-card .recipe-info p {
+    margin-bottom: 5px; /* 단락 아래 여백 */
+}
+
+.popular-recipe-card .recipe-view {
+    border-left: 1px solid rgba(0,0,0,0.3);
+    flex-grow: 1;
+    line-height: 25px;
+}
+
+.popular-recipe-card .recipe-view t4 {
+    font-weight: bold;
+}
+
+/* footer */
+footer {
+    background-color: #3c3935;
+    padding: 20px 50px; /* 상하 여백 추가 */
+    clear: both; /* 이전 float 요소들이 푸터에 영향을 주지 않도록 */
+    margin-top: 40px; /* 본문과의 간격 추가 */
+}
+
+footer > .foot_container {
+    width: 1240px;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+
+
+}
+footer > .foot_container > .foo_div2 > div >  img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-top: 5px;
+}
+
+.foo_div {
+    float: left;
+    margin-right: 20px; /* 오른쪽 여백 추가 */
+}
+
+.foo_div1 {
+    padding-top: 10px; /* 상단 여백 추가 */
+    padding-bottom: 10px; /* 하단 여백 추가 */
+    margin-bottom: 10px; /* 하단 마진 추가 */
+    border-top: 2px solid #fff; /* 검정 선 추가 */
+    flex-grow: 2;
+    flex-basis: 0;
+    align-items: center;
+}
+
+.foo_div2 {
+justify-items: end;
+flex-grow: 1;
+    flex-basis: 0;
+     border-top: 2px solid #fff; /* 검정 선 추가 */
+     text-align: end;
+     height: 100px;
+     align-content: end;
+}
+.foo_div2 div:nth-child(1) {
+      margin-top: 10px;
+}
+
+.foo_div1 span {
+    font-size: 15px;
+    color: white;
+}
+
+.foo_div1 p {
+    margin-top: 5px;
+    color: white;
+}
+
+.foo_div1 img {
+    width: 25px;
+    height: 25px;
+    margin-top: 10px;
+}

@@ -1,0 +1,183 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Let's Roll! Winding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" th:href="@{/css/mainPage.css}">
+    <script src="https://kit.fontawesome.com/6a4a75455d.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+
+<body style="background-image:url('https://img.freepik.com/free-photo/white-texture_1160-788.jpg?size=626&ext=jpg&ga=GA1.1.1788614524.1718496000&semt=ais_user')">
+<div class="top_bar_section">
+    <div class="top_container">
+        <div class="nav_bar">
+            <div class="main_logo">
+                <a href="/">
+                    <img src="https://github.com/user-attachments/assets/3981d981-b28a-402e-92a2-9da18d9f00b2" alt="메인메뉴"></a>
+            </div>
+            <div class="search_bar">
+                <form action="#" th:action="@{/recipe/search}" method="get">
+                    <input type="text" name="keyword" placeholder="레시피 검색" th:value="${keyword}">
+                    <button class="custom-btn btn-13" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+            </div>
+            <div class="user_page">
+
+                <a sec:authorize="isAuthenticated()" href="/member/admin/memberList">
+                    <img th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}"
+                         th:src="@{'https://github.com/Junsu-Ahn/cookers/assets/134615615/8634d640-17fe-4371-899a-0abdde174a48'}" alt="관리자 페이지">
+                </a>
+
+                <a sec:authorize="isAnonymous()" href="/member/login">
+                    <img src="https://github.com/Junsu-Ahn/cookers/assets/156152342/b0693f56-339e-4b19-9c69-49bce1e6a43f" alt="로그인">
+                </a>
+                <a sec:authorize="isAuthenticated()" id="userIcon" style="cursor: pointer;">
+                    <img th:src="${currentMember != null && currentMember.profileImg != null ? currentMember.profileImg : 'https://github.com/Junsu-Ahn/cookers/assets/134615615/5c0de0e0-b917-47ae-94d4-d8ad366dce7f'}" alt="프로필">
+                </a>
+                </a>
+                <div class="arrow-up" th:if="${currentMember} != null"></div>
+                <ul class="user_two_menu" th:if="${currentMember} != null">
+                    <li><a sec:authorize="isAuthenticated()" th:href="@{'/member/' + ${currentMember.nickname}}">레시피 노트</a></li>
+                    <li><a sec:authorize="isAuthenticated()" th:href="@{/member/edit}">회원 정보 수정</a></li>
+                    <li><a href="/member/logout">로그아웃</a></li>
+                </ul>
+                <a href="/recipe/recipe_create_form"><img src="https://github.com/Junsu-Ahn/cookers/assets/156152342/00255179-03e9-4a7e-a8c8-d49ef5db619c" alt="글쓰기"></a>
+            </div>
+        </div>
+    </div>
+    <div class="middle_container">
+        <div class="nav_bar">
+            <ul class="before_after">
+                <li>
+                    <a class="custom-nav nav-13" href="/">메 인</a>
+                </li>
+                <li>
+                    <a class="custom-nav nav-13" href="/recipe/list">레시피</a>
+                    <ul>
+                        <li>
+                            <a class="two_btn" href="/recipe/list/밥요리">밥요리</a>
+                            <a class="two_btn" href="/recipe/list/국 & 찌개">국 & 찌개</a>
+                            <a class="two_btn" href="/recipe/list/면요리">면요리</a>
+                            <a class="two_btn" href="/recipe/list/튀김요리">튀김요리</a>
+                        </li>
+                        <li>
+                            <a class="two_btn" href="/recipe/list/볶음요리">볶음요리</a>
+                            <a class="two_btn" href="/recipe/list/찜 & 조림">찜 & 조림</a>
+                            <a class="two_btn" href="/recipe/list/샐러드">샐러드</a>
+                            <a class="two_btn" href="/recipe/list/밑반찬">밑반찬</a>
+                        </li>
+                        <li>
+                            <a class="two_btn" href="/recipe/list/간식 & 분식">간식 & 분식</a>
+                            <a class="two_btn" href="/recipe/list/디저트">디저트</a>
+                            <a class="two_btn" href="/recipe/list/명절음식">명절음식</a>
+                            <a class="two_btn" href="/recipe/list/기타요리">기타요리</a>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a class="custom-nav nav-13" href="/ranking">쉐프랭킹</a>
+                </li>
+                <li>
+                    <a class="custom-nav nav-13" href="https://emart.ssg.com/?ckwhere=emart">스토어</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="bottom_container"></div>
+<div class="bottom_bar_section">
+    <div class="slider">
+        <div class="slide">
+            <img src="https://github.com/user-attachments/assets/aef535a3-cd09-476f-a5b9-2a2ebe5acc60" alt="이미지 1">
+        </div>
+   </div>
+</div>
+
+<div class="recipe_section popular_recipes">
+    <h2>인기 레시피</h2>
+    <div class="slider_container">
+        <div class="slider_wrapper">
+            <div class="slider_track">
+                <a class="recipe_card" th:each="recipe : ${popularRecipes}" th:href="@{/recipe/detail/{id}(id=${recipe.id})}">
+                    <img th:src="@{${recipe.filepath}}" alt="메인 이미지" style="width: 210px; height: 210px;">
+                    <h3 th:text="${recipe.title}"></h3>
+                    <p th:text="${recipe.subject}"></p>
+                </a>
+            </div>
+        </div>
+        <button class="prev_btn">◀</button>
+        <button class="next_btn">▶</button>
+    </div>
+</div>
+
+<div class="recipe_section latest_recipes">
+    <h2>최신 레시피</h2>
+    <div class="slider_container">
+        <div class="slider_wrapper">
+            <div class="slider_track">
+                <a class="recipe_card" th:each="recipe : ${latestRecipes}" th:href="@{/recipe/detail/{id}(id=${recipe.id})}">
+                    <img th:src="@{${recipe.filepath}}" alt="메인 이미지" style="width: 210px; height: 210px;">
+                    <h3 th:text="${recipe.title}"></h3>
+                    <p th:text="${recipe.subject}"></p>
+                </a>
+            </div>
+        </div>
+        <button class="prev_btn">◀</button>
+        <button class="next_btn">▶</button>
+    </div>
+</div>
+
+
+<!-- 지금 많이 조회되는 레시피 -->
+<div class="popular-recipes-section">
+    <h2>지금 많이 조회되는 레시피</h2>
+    <div class="popular-recipes-container">
+        <a class="popular-recipe-card" th:each="recipe : ${popularRecipes}" th:href="@{/recipe/detail/{id}(id=${recipe.id})}">
+            <div class="recipe-image">
+                <img th:src="@{${recipe.filepath}}" alt="Recipe Image">
+            </div>
+            <div class="recipe-info">
+                <h3 th:text="${recipe.title}">Recipe Title</h3>
+                <p th:text="${recipe.subject}"></p>
+            </div>
+            <div class="recipe-view">
+                <t4>조회수</t4>
+                <div th:text="${recipe.view}">View</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+
+
+
+
+
+
+<!-- footer -->
+<footer>
+    <div class="foot_container">
+        <div class="foo_div1">
+            <span>(주) 오내요</span> <span>  |  </span>
+            <span>대표 : 안준수</span> <span>  |  </span>
+            <span>사업자등록번호 : 000-00-00000</span> <span>  |  </span>
+            <p>주소 : 대전 서구 대덕대로 179 9층 (우)35230</p>
+            <p>Copyright © Oh!naeyo Corp. All rights reserved.</p>
+        </div>
+        <div class="foo_div2">
+            <div style="color:white;">RECIPE BOOK</div>
+            <div>
+                <img src="https://mblogthumb-phinf.pstatic.net/MjAyMTA5MTlfMjU2/MDAxNjMyMDE3OTE1NTUy.y5BlLkFcMEwQDvo9zN3C-eoKS9YppYRPzNGvxkJglV0g.LK3g6zHRf6sQK6VCvIbpoNMNAidH3ySp4L4FDVBtRewg.PNG.brotherm1n/SE-f74581bb-b3a8-4e47-af52-281656aa17f4.png?type=w800">
+                <img src="https://blog.kakaocdn.net/dn/UGS0q/btree5Viurw/l07AH1VgWJHm4stsAHLdL0/img.png">
+                <img src="https://w7.pngwing.com/pngs/247/997/png-transparent-kakaotalk-hd-logo.png">
+                <img src="https://media.rocketpunch.com/cache/2e/d5/2ed5970e32545f0b1d74beac75914e7b.jpg">
+            </div>
+        </div>
+    </div>
+
+</footer>
+<script th:src="@{mainjs/mainPage.js}"></script>
+</body>

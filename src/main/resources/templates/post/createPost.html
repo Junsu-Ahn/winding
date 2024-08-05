@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head xmlns="http://www.w3.org/1999/html">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 작성</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/createPost.css">
+    <script src="https://kit.fontawesome.com/6a4a75455d.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_APP_KEY&libraries=services"></script>
+</head>
+<body style="background-color: #f0f0f0;">
+<div class="container mt-5">
+    <h1>게시글 작성</h1>
+    <form action="/posts" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="${_csrf.token}" />
+        <div class="form-group">
+            <label for="author">작성자</label>
+            <input type="text" class="form-control" id="author" name="author" required>
+        </div>
+        <div class="form-group">
+            <label for="date">작성일자</label>
+            <input type="date" class="form-control" id="date" name="date" required>
+        </div>
+        <div class="form-group">
+            <label for="views">조회수</label>
+            <input type="number" class="form-control" id="views" name="views" value="0" readonly>
+        </div>
+        <div class="form-group">
+            <label for="description">내용</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="thumbnail">썸네일</label>
+            <input type="file" class="form-control-file" id="thumbnail" name="thumbnail">
+        </div>
+        <div class="form-group">
+            <label for="departure">출발지</label>
+            <input type="text" class="form-control" id="departure" name="departure" required>
+            <input type="hidden" id="departureLat" name="departureLat">
+            <input type="hidden" id="departureLng" name="departureLng">
+            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('departure')">주소 검색</button>
+        </div>
+        <div class="form-group">
+            <label for="destination">목적지</label>
+            <input type="text" class="form-control" id="destination" name="destination" required>
+            <input type="hidden" id="destinationLat" name="destinationLat">
+            <input type="hidden" id="destinationLng" name="destinationLng">
+            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('destination')">주소 검색</button>
+        </div>
+        <div class="form-group">
+            <label for="waypoint1">경유지 1</label>
+            <input type="text" class="form-control" id="waypoint1" name="waypoint1">
+            <input type="hidden" id="waypoint1Lat" name="waypoint1Lat">
+            <input type="hidden" id="waypoint1Lng" name="waypoint1Lng">
+            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint1')">주소 검색</button>
+        </div>
+        <div class="form-group">
+            <label for="waypoint2">경유지 2</label>
+            <input type="text" class="form-control" id="waypoint2" name="waypoint2">
+            <input type="hidden" id="waypoint2Lat" name="waypoint2Lat">
+            <input type="hidden" id="waypoint2Lng" name="waypoint2Lng">
+            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint2')">주소 검색</button>
+        </div>
+        <div class="form-group">
+            <label for="waypoint3">경유지 3</label>
+            <input type="text" class="form-control" id="waypoint3" name="waypoint3">
+            <input type="hidden" id="waypoint3Lat" name="waypoint3Lat">
+            <input type="hidden" id="waypoint3Lng" name="waypoint3Lng">
+            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint3')">주소 검색</button>
+        </div>
+        <button type="submit" class="btn btn-primary">제출</button>
+    </form>
+</div>
+
+<!-- Kakao Map -->
+<div id="map" style="width:100%;height:350px;"></div>
+
+<script src="/js/createPost.js"></script>
+</body>
+</html>
