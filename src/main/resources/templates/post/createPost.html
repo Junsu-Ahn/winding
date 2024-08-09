@@ -32,6 +32,8 @@
             <!-- 경유지 필드가 추가될 곳 -->
         </div>
         <button type="button" class="btn btn-secondary mt-2" onclick="addWaypoint()">경유지 추가</button>
+        <!-- 확인 버튼 추가 -->
+        <button type="button" class="btn btn-primary mt-2" onclick="calculateRoute()">확인</button>
         <button type="submit" class="btn btn-primary mt-2">제출</button>
     </form>
 
@@ -45,46 +47,114 @@
     let linePath = [];
     let polyline;
 
-    function initializeMap() {
+    // 지도를 초기화하는 함수, 확인 버튼을 누를 때 호출
+    function initializeMap(centerCoords) {
+        map = new kakao.maps.Map(document.getElementById('map'), {
+            center: centerCoords,
+            level: 5
+        });
 
-    const userAddress = "[[${userAddress}]]";
-
-    if (!userAddress || userAddress === "null") {
-        alert("사용자 주소를 찾을 수 없습니다.");
-        return;
+        polyline = new kakao.maps.Polyline({
+            map: map,
+            path: [],
+            strokeWeight: 5,
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeStyle: 'solid'
+        });
     }
 
-    const geocoder = new kakao.maps.services.Geocoder();
+    // 사용자가 입력한 값을 기반으로 경로를 계산하는 함수
+    function calculateRoute() {
+        const departureAddress = document.getElementById('departure').value;
+        const destinationAddress = document.getElementById('destination').value;
+        const waypoints = [];
 
-    geocoder.addressSearch(userAddress, function(result, status) {
-        if (status === kakao.maps.services.Status.OK) {
-            const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-            map = new kakao.maps.Map(document.getElementById('map'), {
-                center: coords,
-                level: 5
-            });
-
-            const marker = new kakao.maps.Marker({
-                map: map,
-                position: coords
-            });
-
-            polyline = new kakao.maps.Polyline({
-                map: map,
-                path: [],
-                strokeWeight: 5,
-                strokeColor: '#FF0000',
-                strokeOpacity: 0.8,
-                strokeStyle: 'solid'
-            });
-
-        } else {
-            alert("사용자 주소를 찾을 수 없습니다.");
+        for (let i = 1; i <= waypointCount; i++) {
+            const waypointAddress = document.getElementById(`waypoint${i}`).value;
+            if (waypointAddress) {
+                waypoints.push(waypointAddress);
+            }
         }
-    });
-}
 
+        if (!departureAddress || !destinationAddress) {
+            alert("출발지와 목적지를 입력해주세요.");
+            return;
+        }
+
+        const geocoder = new kakao.maps.services.Geocoder();
+
+        geocoder.addressSearch(departureAddress, function(departureResult, departureStatus) {
+            if (departureStatus === kakao.maps.services.Status.OK) {
+                const departureCoords = new kakao.maps.LatLng(departureResult[0].y, departureResult[0].x);
+
+                geocoder.addressSearch(destinationAddress, function(destinationResult, destinationStatus) {
+                    if (destinationStatus === kakao.maps.services.Status.OK) {
+                        const destinationCoords = new kakao.maps.LatLng(destinationResult[0].y, destinationResult[0].x);
+
+                        const waypointCoords = [];
+                        if (waypoints.length > 0) {
+                            let processedWaypoints = 0;
+                            waypoints.forEach((waypoint, index) => {
+                                geocoder.addressSearch(waypoint, function(waypointResult, waypointStatus) {
+                                    if (waypointStatus === kakao.maps.services.Status.OK) {
+                                        waypointCoords.push(new kakao.maps.LatLng(waypointResult[0].y, waypointResult[0].x));
+                                    }
+                                    processedWaypoints++;
+                                    if (processedWaypoints === waypoints.length) {
+                                        initializeMap(departureCoords); // 지도 초기화
+                                        fetchNavigationRoute(departureCoords, destinationCoords, waypointCoords);
+                                    }
+                                });
+                            });
+                        } else {
+                            initializeMap(departureCoords); // 지도 초기화
+                            fetchNavigationRoute(departureCoords, destinationCoords);
+                        }
+                    } else {
+                        alert("목적지 주소를 찾을 수 없습니다.");
+                    }
+                });
+            } else {
+                alert("출발지 주소를 찾을 수 없습니다.");
+            }
+        });
+    }
+
+    function fetchNavigationRoute(departureCoords, destinationCoords, waypointCoords = []) {
+    const origin = `${departureCoords.getLng()},${departureCoords.getLat()}`;
+    const destination = `${destinationCoords.getLng()},${destinationCoords.getLat()}`;
+    const waypoints = waypointCoords.map(coord => `${coord.getLng()},${coord.getLat()}`).join('|');
+
+    fetch(`/navigation-route?origin=${origin}&destination=${destination}&waypoints=${waypoints}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("API Response:", data); // 응답 데이터 확인
+            if (!data.routes || data.routes.length === 0) {
+                throw new Error("No routes found in the response.");
+            }
+
+            const linePath = [];
+            data.routes[0].sections.forEach(section => {
+                section.roads.forEach(road => {
+                    for (let i = 0; i < road.vertexes.length; i += 2) {
+                        const lat = road.vertexes[i + 1];
+                        const lng = road.vertexes[i];
+                        linePath.push(new kakao.maps.LatLng(lat, lng));
+                    }
+                });
+            });
+
+            polyline.setPath(linePath);
+            map.setBounds(polyline.getBounds());
+        })
+        .catch(error => console.error("Error fetching navigation route:", error.message));
+}
 
     function addWaypoint() {
         waypointCount++;
@@ -107,10 +177,9 @@
     function removeWaypoint(id) {
         const waypointContainer = document.getElementById(`waypoint-group-${id}`);
         waypointContainer.remove();
-        updateMap();
     }
 
-    function searchLocation(targetId) {
+    function searchLocation(targetId, callback) {
         new daum.Postcode({
             oncomplete: function(data) {
                 var addr = data.roadAddress || data.jibunAddress;
@@ -124,56 +193,12 @@
                         document.getElementById(targetId + 'Lat').value = lat;
                         document.getElementById(targetId + 'Lng').value = lng;
 
-                        updateMap();
+                        if (callback) callback();
                     }
                 });
             }
         }).open();
     }
-
-    function updateMap() {
-
-        markers.forEach(marker => marker.setMap(null));
-        markers = [];
-        linePath = [];
-
-
-        const departureLat = document.getElementById('departureLat').value;
-        const departureLng = document.getElementById('departureLng').value;
-        if (departureLat && departureLng) {
-            addMarkerAndPath(departureLat, departureLng);
-        }
-
-
-        for (let i = 1; i <= waypointCount; i++) {
-            const waypointLat = document.getElementById(`waypoint${i}Lat`).value;
-            const waypointLng = document.getElementById(`waypoint${i}Lng`).value;
-            if (waypointLat && waypointLng) {
-                addMarkerAndPath(waypointLat, waypointLng);
-            }
-        }
-
-
-        const destinationLat = document.getElementById('destinationLat').value;
-        const destinationLng = document.getElementById('destinationLng').value;
-        if (destinationLat && destinationLng) {
-            addMarkerAndPath(destinationLat, destinationLng);
-        }
-
-        polyline.setPath(linePath);
-    }
-
-    function addMarkerAndPath(lat, lng) {
-        const position = new kakao.maps.LatLng(lat, lng);
-        const marker = new kakao.maps.Marker({
-            position: position,
-            map: map
-        });
-        markers.push(marker);
-        linePath.push(position);
-    }
-
-    window.onload = initializeMap;
 </script>
 </body>
 </html>
