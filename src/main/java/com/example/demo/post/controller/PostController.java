@@ -26,6 +26,10 @@ public class PostController {
 
     @GetMapping("/create")
     public String showCreateForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        if (userDetails == null) {
+            return "redirect:/member/login"; // 로그인 페이지로 리다이렉트
+        }
+
         Optional<Member> optionalMember = memberService.findByUsername(userDetails.getUsername());
 
         if (optionalMember.isPresent()) {
@@ -33,7 +37,6 @@ public class PostController {
             model.addAttribute("author", userDetails.getUsername());
             model.addAttribute("userAddress", member.getAddress()); // 사용자의 주소를 모델에 추가
         } else {
-
             model.addAttribute("author", userDetails.getUsername());
             model.addAttribute("userAddress", "주소 정보 없음"); // 기본값 설정 등
         }
