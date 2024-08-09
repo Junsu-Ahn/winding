@@ -1,84 +1,179 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head xmlns="http://www.w3.org/1999/html">
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>게시글 작성</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/createPost.css">
-    <script src="https://kit.fontawesome.com/6a4a75455d.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_APP_KEY&libraries=services"></script>
+    <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=56401609493145e78c3994a17c298292&libraries=services,clusterer,drawing"></script>
 </head>
 <body style="background-color: #f0f0f0;">
 <div class="container mt-5">
     <h1>게시글 작성</h1>
-    <form action="/posts" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="_csrf" value="${_csrf.token}" />
-        <div class="form-group">
-            <label for="author">작성자</label>
-            <input type="text" class="form-control" id="author" name="author" required>
-        </div>
-        <div class="form-group">
-            <label for="date">작성일자</label>
-            <input type="date" class="form-control" id="date" name="date" required>
-        </div>
-        <div class="form-group">
-            <label for="views">조회수</label>
-            <input type="number" class="form-control" id="views" name="views" value="0" readonly>
-        </div>
-        <div class="form-group">
-            <label for="description">내용</label>
-            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-        </div>
-        <div class="form-group">
-            <label for="thumbnail">썸네일</label>
-            <input type="file" class="form-control-file" id="thumbnail" name="thumbnail">
-        </div>
+    <form action="/posts/create" method="post" enctype="multipart/form-data">
         <div class="form-group">
             <label for="departure">출발지</label>
-            <input type="text" class="form-control" id="departure" name="departure" required>
+            <input type="text" class="form-control" id="departure" name="departure" placeholder="출발지 주소" required readonly>
             <input type="hidden" id="departureLat" name="departureLat">
             <input type="hidden" id="departureLng" name="departureLng">
             <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('departure')">주소 검색</button>
         </div>
         <div class="form-group">
             <label for="destination">목적지</label>
-            <input type="text" class="form-control" id="destination" name="destination" required>
+            <input type="text" class="form-control" id="destination" name="destination" placeholder="목적지 주소" required readonly>
             <input type="hidden" id="destinationLat" name="destinationLat">
             <input type="hidden" id="destinationLng" name="destinationLng">
             <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('destination')">주소 검색</button>
         </div>
-        <div class="form-group">
-            <label for="waypoint1">경유지 1</label>
-            <input type="text" class="form-control" id="waypoint1" name="waypoint1">
-            <input type="hidden" id="waypoint1Lat" name="waypoint1Lat">
-            <input type="hidden" id="waypoint1Lng" name="waypoint1Lng">
-            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint1')">주소 검색</button>
+        <div id="waypoints-container">
+            <label>경유지</label>
+            <!-- 경유지 필드가 추가될 곳 -->
         </div>
-        <div class="form-group">
-            <label for="waypoint2">경유지 2</label>
-            <input type="text" class="form-control" id="waypoint2" name="waypoint2">
-            <input type="hidden" id="waypoint2Lat" name="waypoint2Lat">
-            <input type="hidden" id="waypoint2Lng" name="waypoint2Lng">
-            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint2')">주소 검색</button>
-        </div>
-        <div class="form-group">
-            <label for="waypoint3">경유지 3</label>
-            <input type="text" class="form-control" id="waypoint3" name="waypoint3">
-            <input type="hidden" id="waypoint3Lat" name="waypoint3Lat">
-            <input type="hidden" id="waypoint3Lng" name="waypoint3Lng">
-            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint3')">주소 검색</button>
-        </div>
-        <button type="submit" class="btn btn-primary">제출</button>
+        <button type="button" class="btn btn-secondary mt-2" onclick="addWaypoint()">경유지 추가</button>
+        <button type="submit" class="btn btn-primary mt-2">제출</button>
     </form>
+
+    <div id="map" style="width:100%;height:400px;margin-top:20px;"></div> <!-- 지도 추가 -->
 </div>
 
-<!-- Kakao Map -->
-<div id="map" style="width:100%;height:350px;"></div>
+<script>
+    let waypointCount = 0;
+    let map;
+    let markers = [];
+    let linePath = [];
+    let polyline;
 
-<script src="/js/createPost.js"></script>
+    function initializeMap() {
+
+    const userAddress = "[[${userAddress}]]";
+
+    if (!userAddress || userAddress === "null") {
+        alert("사용자 주소를 찾을 수 없습니다.");
+        return;
+    }
+
+    const geocoder = new kakao.maps.services.Geocoder();
+
+    geocoder.addressSearch(userAddress, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+            const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+            map = new kakao.maps.Map(document.getElementById('map'), {
+                center: coords,
+                level: 5
+            });
+
+            const marker = new kakao.maps.Marker({
+                map: map,
+                position: coords
+            });
+
+            polyline = new kakao.maps.Polyline({
+                map: map,
+                path: [],
+                strokeWeight: 5,
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeStyle: 'solid'
+            });
+
+        } else {
+            alert("사용자 주소를 찾을 수 없습니다.");
+        }
+    });
+}
+
+
+    function addWaypoint() {
+        waypointCount++;
+        const waypointContainer = document.createElement('div');
+        waypointContainer.className = 'form-group';
+        waypointContainer.id = `waypoint-group-${waypointCount}`;
+
+        waypointContainer.innerHTML = `
+            <label for="waypoint${waypointCount}">경유지 ${waypointCount}</label>
+            <input type="text" class="form-control" id="waypoint${waypointCount}" name="waypoints[${waypointCount}]" placeholder="경유지 주소" required readonly>
+            <input type="hidden" id="waypoint${waypointCount}Lat" name="waypointLats[${waypointCount}]">
+            <input type="hidden" id="waypoint${waypointCount}Lng" name="waypointLngs[${waypointCount}]">
+            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint${waypointCount}')">주소 검색</button>
+            <button type="button" class="btn btn-danger mt-2" onclick="removeWaypoint(${waypointCount})">경유지 삭제</button>
+        `;
+
+        document.getElementById('waypoints-container').appendChild(waypointContainer);
+    }
+
+    function removeWaypoint(id) {
+        const waypointContainer = document.getElementById(`waypoint-group-${id}`);
+        waypointContainer.remove();
+        updateMap();
+    }
+
+    function searchLocation(targetId) {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                var addr = data.roadAddress || data.jibunAddress;
+                document.getElementById(targetId).value = addr;
+
+                var geocoder = new kakao.maps.services.Geocoder();
+                geocoder.addressSearch(addr, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var lat = result[0].y;
+                        var lng = result[0].x;
+                        document.getElementById(targetId + 'Lat').value = lat;
+                        document.getElementById(targetId + 'Lng').value = lng;
+
+                        updateMap();
+                    }
+                });
+            }
+        }).open();
+    }
+
+    function updateMap() {
+
+        markers.forEach(marker => marker.setMap(null));
+        markers = [];
+        linePath = [];
+
+
+        const departureLat = document.getElementById('departureLat').value;
+        const departureLng = document.getElementById('departureLng').value;
+        if (departureLat && departureLng) {
+            addMarkerAndPath(departureLat, departureLng);
+        }
+
+
+        for (let i = 1; i <= waypointCount; i++) {
+            const waypointLat = document.getElementById(`waypoint${i}Lat`).value;
+            const waypointLng = document.getElementById(`waypoint${i}Lng`).value;
+            if (waypointLat && waypointLng) {
+                addMarkerAndPath(waypointLat, waypointLng);
+            }
+        }
+
+
+        const destinationLat = document.getElementById('destinationLat').value;
+        const destinationLng = document.getElementById('destinationLng').value;
+        if (destinationLat && destinationLng) {
+            addMarkerAndPath(destinationLat, destinationLng);
+        }
+
+        polyline.setPath(linePath);
+    }
+
+    function addMarkerAndPath(lat, lng) {
+        const position = new kakao.maps.LatLng(lat, lng);
+        const marker = new kakao.maps.Marker({
+            position: position,
+            map: map
+        });
+        markers.push(marker);
+        linePath.push(position);
+    }
+
+    window.onload = initializeMap;
+</script>
 </body>
 </html>

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -126,7 +127,7 @@ public class MemberController {
         }
         try {
             memberService.signup(
-                    signForm.getProviderTypeCode(),
+                    signForm.getAddress(), // address 필드 추가
                     signForm.getUsername(),
                     signForm.getPassword(),
                     signForm.getPassword_confirm(),
@@ -340,6 +341,9 @@ public class MemberController {
 
         @NotBlank
         private String email;
+
+        @NotEmpty(message = "주소는 필수 입력 사항입니다.")
+        private String address;
 
         private Long hit;
 

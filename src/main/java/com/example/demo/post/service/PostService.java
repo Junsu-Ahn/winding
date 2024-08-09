@@ -1,67 +1,53 @@
 package com.example.demo.post.service;
 
-import com.example.demo.map.service.MapService;
-import com.example.demo.member.entity.Member;
-import com.example.demo.member.repository.MemberRepository;
 import com.example.demo.post.entity.Post;
 import com.example.demo.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
-    private final MemberRepository memberRepository;
-    private final MapService mapService;
-    private final String fileDirPath = "/path/to/upload/directory";
 
-    public Post createPost(String title, String description, String departure, String destination, double destinationLat, double destinationLng, String waypoint1, String waypoint2, String waypoint3, Long memberId, MultipartFile thumbnail) {
-        String mapUrl = mapService.getMapUrl(destination);
+    public Post createPost(String title, String description, String departure, double departureLat, double departureLng,
+                           String destination, double destinationLat, double destinationLng,
+                           List<String> waypoints, List<Double> waypointLats, List<Double> waypointLngs,
+                           String author, MultipartFile imageFile) throws IOException {
+        Post post = new Post();
+        post.setTitle(title);
+        post.setDescription(description);
+        post.setDeparture(departure);
+        post.setDepartureLat(departureLat);
+        post.setDepartureLng(departureLng);
+        post.setDestination(destination);
+        post.setDestinationLat(destinationLat);
+        post.setDestinationLng(destinationLng);
+        post.setAuthor(author);
 
-        String thumbnailRelPath = "post/" + UUID.randomUUID().toString() + ".jpg";
-        File thumbnailFile = new File(fileDirPath + "/" + thumbnailRelPath);
-
-        try {
-            if (!thumbnailFile.getParentFile().exists()) {
-                thumbnailFile.getParentFile().mkdirs();
+        if (waypoints != null && !waypoints.isEmpty()) {
+            for (int i = 0; i < waypoints.size(); i++) {
+                String waypoint = waypoints.get(i);
+                double waypointLat = waypointLats.get(i);
+                double waypointLng = waypointLngs.get(i);
+                post.addWaypoint(waypoint, waypointLat, waypointLng);  // Post 엔티티에서 경유지를 추가하는 메서드 호출
             }
-            thumbnail.transferTo(thumbnailFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("Member not found: " + memberId));
-
-        Post post = Post.builder()
-                .title(title)
-                .description(description)
-                .departure(departure)
-                .destination(destination)
-                .destinationLat(destinationLat)
-                .destinationLng(destinationLng)
-                .waypoint1(waypoint1)
-                .waypoint2(waypoint2)
-                .waypoint3(waypoint3)
-                .thumbnail(thumbnailRelPath)
-                .member(member)
-                .build();
+        if (imageFile != null && !imageFile.isEmpty()) {
+            post.setImage(imageFile.getBytes());
+        }
 
         return postRepository.save(post);
     }
@@ -71,24 +57,47 @@ public class PostService {
     }
 
     public Post getPostById(Long id) {
-        return postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Post not found: " + id));
+        return postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + id));
     }
 
-    public Post updatePost(Long id, String title, String description, String departure, String destination, double destinationLat, double destinationLng, String waypoint1, String waypoint2, String waypoint3, Long memberId, MultipartFile imageFile) {
+    public Post incrementViewsAndGetPost(Long id) {
         Post post = getPostById(id);
-        String imageUrl = saveImage(imageFile);
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("Member not found: " + memberId));
+        post.setViews(post.getViews() + 1);
+        return postRepository.save(post);
+    }
+
+    public Post updatePost(Long id, String title, String description, String departure, double departureLat, double departureLng,
+                           String destination, double destinationLat, double destinationLng,
+                           List<String> waypoints, List<Double> waypointLats, List<Double> waypointLngs,
+                           String author, MultipartFile imageFile) throws IOException {
+        Post post = getPostById(id);
         post.setTitle(title);
         post.setDescription(description);
         post.setDeparture(departure);
+        post.setDepartureLat(departureLat);
+        post.setDepartureLng(departureLng);
         post.setDestination(destination);
         post.setDestinationLat(destinationLat);
         post.setDestinationLng(destinationLng);
-        post.setWaypoint1(waypoint1);
-        post.setWaypoint2(waypoint2);
-        post.setWaypoint3(waypoint3);
-        post.setThumbnail(imageUrl);
-        post.setMember(member);
+        post.setAuthor(author);
+
+        post.getWaypoints().clear();
+        post.getWaypointLats().clear();
+        post.getWaypointLngs().clear();
+
+        if (waypoints != null && !waypoints.isEmpty()) {
+            for (int i = 0; i < waypoints.size(); i++) {
+                String waypoint = waypoints.get(i);
+                double waypointLat = waypointLats.get(i);
+                double waypointLng = waypointLngs.get(i);
+                post.addWaypoint(waypoint, waypointLat, waypointLng);
+            }
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            post.setImage(imageFile.getBytes());
+        }
+
         return postRepository.save(post);
     }
 
@@ -96,23 +105,26 @@ public class PostService {
         postRepository.deleteById(id);
     }
 
-    private String saveImage(MultipartFile imageFile) {
-        if (imageFile.isEmpty()) {
-            return null;
-        }
-        String fileName = UUID.randomUUID().toString() + "_" + StringUtils.cleanPath(imageFile.getOriginalFilename());
-        Path uploadPath = Paths.get(fileDirPath + "/post/");
+    @Value("${custom.kakao.rest.api.key}")
+    private String kakaoApiKey;
 
-        try {
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+    public String getRoute(String origin, String destination, String waypoints) {
+        RestTemplate restTemplate = new RestTemplate();
 
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(imageFile.getInputStream(), filePath);
-            return "/imagefile/post/" + fileName;
-        } catch (IOException e) {
-            throw new RuntimeException("Could not save image file: " + fileName, e);
+        String url = "https://apis-navi.kakaomobility.com/v1/route?" +
+                "origin=" + origin + "&destination=" + destination;
+
+        if (waypoints != null && !waypoints.isEmpty()) {
+            url += "&waypoints=" + waypoints;
         }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "KakaoAK " + kakaoApiKey);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        return response.getBody();
     }
 }

@@ -3,7 +3,6 @@ package com.example.demo.member.service;
 import com.example.demo.global.email.service.EmailService;
 import com.example.demo.global.exception.DataNotFoundException;
 import com.example.demo.global.exception.PasswordMismatchException;
-import com.example.demo.global.exception.ResourceNotFoundException;
 import com.example.demo.member.entity.Member;
 import com.example.demo.member.entity.Role;
 import com.example.demo.member.repository.MemberRepository;
@@ -23,7 +22,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +66,7 @@ public class MemberService {
                 .role(Role.ROLE_USER)  // 기본적으로 USER 권한을 부여
                 .build();
 
-        emailService.send(email, "Winding 회원가입을 축하합니다!", "Winding 회원가입이 정상적으로 완료되었습니다^^~!");
+       // emailService.send(email, "Winding 회원가입을 축하합니다!", "Winding 회원가입이 정상적으로 완료되었습니다^^~!");
         return memberRepository.save(member);
     }
 
