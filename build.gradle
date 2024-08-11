@@ -41,6 +41,9 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
 	implementation 'org.springframework.boot:spring-boot-starter-mail:3.3.0'
+
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
+
 }
 
 tasks.named('test') {

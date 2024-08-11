@@ -7,25 +7,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=56401609493145e78c3994a17c298292&libraries=services,clusterer,drawing"></script>
+    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=aun2dmrzp7"></script>
 </head>
 <body style="background-color: #f0f0f0;">
 <div class="container mt-5">
     <h1>게시글 작성</h1>
-    <form action="/posts/create" method="post" enctype="multipart/form-data">
+    <form id="routeForm">
         <div class="form-group">
             <label for="departure">출발지</label>
             <input type="text" class="form-control" id="departure" name="departure" placeholder="출발지 주소" required readonly>
             <input type="hidden" id="departureLat" name="departureLat">
             <input type="hidden" id="departureLng" name="departureLng">
-            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('departure')">주소 검색</button>
+            <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('departure')">주소 검색</button>
         </div>
         <div class="form-group">
             <label for="destination">목적지</label>
             <input type="text" class="form-control" id="destination" name="destination" placeholder="목적지 주소" required readonly>
             <input type="hidden" id="destinationLat" name="destinationLat">
             <input type="hidden" id="destinationLng" name="destinationLng">
-            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('destination')">주소 검색</button>
+            <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('destination')">주소 검색</button>
         </div>
         <div id="waypoints-container">
             <label>경유지</label>
@@ -33,128 +33,46 @@
         </div>
         <button type="button" class="btn btn-secondary mt-2" onclick="addWaypoint()">경유지 추가</button>
         <!-- 확인 버튼 추가 -->
-        <button type="button" class="btn btn-primary mt-2" onclick="calculateRoute()">확인</button>
-        <button type="submit" class="btn btn-primary mt-2">제출</button>
+        <button type="button" class="btn btn-primary mt-2" onclick="submitRoute()">확인</button>
     </form>
 
     <div id="map" style="width:100%;height:400px;margin-top:20px;"></div> <!-- 지도 추가 -->
 </div>
 
 <script>
-    let waypointCount = 0;
-    let map;
-    let markers = [];
-    let linePath = [];
-    let polyline;
+    // 다음 주소 검색 API 사용
+    function execDaumPostcode(targetId) {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+                document.getElementById(targetId).value = addr;
 
-    // 지도를 초기화하는 함수, 확인 버튼을 누를 때 호출
-    function initializeMap(centerCoords) {
-        map = new kakao.maps.Map(document.getElementById('map'), {
-            center: centerCoords,
-            level: 5
-        });
-
-        polyline = new kakao.maps.Polyline({
-            map: map,
-            path: [],
-            strokeWeight: 5,
-            strokeColor: '#FF0000',
-            strokeOpacity: 0.8,
-            strokeStyle: 'solid'
-        });
+                // 주소를 좌표로 변환
+                getCoordinatesFromNaver(addr, targetId);
+            }
+        }).open();
     }
 
-    // 사용자가 입력한 값을 기반으로 경로를 계산하는 함수
-    function calculateRoute() {
-        const departureAddress = document.getElementById('departure').value;
-        const destinationAddress = document.getElementById('destination').value;
-        const waypoints = [];
-
-        for (let i = 1; i <= waypointCount; i++) {
-            const waypointAddress = document.getElementById(`waypoint${i}`).value;
-            if (waypointAddress) {
-                waypoints.push(waypointAddress);
-            }
-        }
-
-        if (!departureAddress || !destinationAddress) {
-            alert("출발지와 목적지를 입력해주세요.");
-            return;
-        }
-
-        const geocoder = new kakao.maps.services.Geocoder();
-
-        geocoder.addressSearch(departureAddress, function(departureResult, departureStatus) {
-            if (departureStatus === kakao.maps.services.Status.OK) {
-                const departureCoords = new kakao.maps.LatLng(departureResult[0].y, departureResult[0].x);
-
-                geocoder.addressSearch(destinationAddress, function(destinationResult, destinationStatus) {
-                    if (destinationStatus === kakao.maps.services.Status.OK) {
-                        const destinationCoords = new kakao.maps.LatLng(destinationResult[0].y, destinationResult[0].x);
-
-                        const waypointCoords = [];
-                        if (waypoints.length > 0) {
-                            let processedWaypoints = 0;
-                            waypoints.forEach((waypoint, index) => {
-                                geocoder.addressSearch(waypoint, function(waypointResult, waypointStatus) {
-                                    if (waypointStatus === kakao.maps.services.Status.OK) {
-                                        waypointCoords.push(new kakao.maps.LatLng(waypointResult[0].y, waypointResult[0].x));
-                                    }
-                                    processedWaypoints++;
-                                    if (processedWaypoints === waypoints.length) {
-                                        initializeMap(departureCoords); // 지도 초기화
-                                        fetchNavigationRoute(departureCoords, destinationCoords, waypointCoords);
-                                    }
-                                });
-                            });
-                        } else {
-                            initializeMap(departureCoords); // 지도 초기화
-                            fetchNavigationRoute(departureCoords, destinationCoords);
-                        }
-                    } else {
-                        alert("목적지 주소를 찾을 수 없습니다.");
-                    }
-                });
-            } else {
-                alert("출발지 주소를 찾을 수 없습니다.");
-            }
-        });
-    }
-
-    function fetchNavigationRoute(departureCoords, destinationCoords, waypointCoords = []) {
-    const origin = `${departureCoords.getLng()},${departureCoords.getLat()}`;
-    const destination = `${destinationCoords.getLng()},${destinationCoords.getLat()}`;
-    const waypoints = waypointCoords.map(coord => `${coord.getLng()},${coord.getLat()}`).join('|');
-
-    fetch(`/navigation-route?origin=${origin}&destination=${destination}&waypoints=${waypoints}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("API Response:", data); // 응답 데이터 확인
-            if (!data.routes || data.routes.length === 0) {
-                throw new Error("No routes found in the response.");
-            }
-
-            const linePath = [];
-            data.routes[0].sections.forEach(section => {
-                section.roads.forEach(road => {
-                    for (let i = 0; i < road.vertexes.length; i += 2) {
-                        const lat = road.vertexes[i + 1];
-                        const lng = road.vertexes[i];
-                        linePath.push(new kakao.maps.LatLng(lat, lng));
-                    }
-                });
+    // 네이버 지오코딩 API를 사용하여 주소를 좌표로 변환
+    function getCoordinatesFromNaver(address, targetId) {
+        fetch(`/api/geocode?address=${encodeURIComponent(address)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'OK' && data.addresses.length > 0) {
+                    const location = data.addresses[0];
+                    document.getElementById(targetId + 'Lat').value = location.y;
+                    document.getElementById(targetId + 'Lng').value = location.x;
+                } else {
+                    alert("주소를 좌표로 변환하는 데 실패했습니다.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("주소를 좌표로 변환하는 중 오류가 발생했습니다.");
             });
+    }
 
-            polyline.setPath(linePath);
-            map.setBounds(polyline.getBounds());
-        })
-        .catch(error => console.error("Error fetching navigation route:", error.message));
-}
+    let waypointCount = 0;
 
     function addWaypoint() {
         waypointCount++;
@@ -167,7 +85,7 @@
             <input type="text" class="form-control" id="waypoint${waypointCount}" name="waypoints[${waypointCount}]" placeholder="경유지 주소" required readonly>
             <input type="hidden" id="waypoint${waypointCount}Lat" name="waypointLats[${waypointCount}]">
             <input type="hidden" id="waypoint${waypointCount}Lng" name="waypointLngs[${waypointCount}]">
-            <button type="button" class="btn btn-secondary mt-2" onclick="searchLocation('waypoint${waypointCount}')">주소 검색</button>
+            <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('waypoint${waypointCount}')">주소 검색</button>
             <button type="button" class="btn btn-danger mt-2" onclick="removeWaypoint(${waypointCount})">경유지 삭제</button>
         `;
 
@@ -179,26 +97,81 @@
         waypointContainer.remove();
     }
 
-    function searchLocation(targetId, callback) {
-        new daum.Postcode({
-            oncomplete: function(data) {
-                var addr = data.roadAddress || data.jibunAddress;
-                document.getElementById(targetId).value = addr;
+    function submitRoute() {
+        const formElement = document.getElementById('routeForm');
+        const formData = new FormData(formElement);
+        const jsonData = {};
+        formData.forEach((value, key) => jsonData[key] = value);
 
-                var geocoder = new kakao.maps.services.Geocoder();
-                geocoder.addressSearch(addr, function(result, status) {
-                    if (status === kakao.maps.services.Status.OK) {
-                        var lat = result[0].y;
-                        var lng = result[0].x;
-                        document.getElementById(targetId + 'Lat').value = lat;
-                        document.getElementById(targetId + 'Lng').value = lng;
+        console.log("Sending data to API:", jsonData); // 데이터를 콘솔에 로그 출력
 
-                        if (callback) callback();
-                    }
-                });
+        fetch('/api/route', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData),
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
             }
-        }).open();
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+            displayRouteOnMap(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("경로를 불러오는 중 오류가 발생했습니다.");
+        });
+    }
+
+    let map;
+    let polyline;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        map = new naver.maps.Map(document.getElementById('map'), {
+            center: new naver.maps.LatLng(37.394727, 127.110153),
+            zoom: 10
+        });
+
+        polyline = new naver.maps.Polyline({
+            map: map,
+            path: [],
+            strokeWeight: 5,
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeStyle: 'solid'
+        });
+
+        // 서버에서 경로 데이터를 가져와서 지도에 표시
+        fetch('/posts/route')
+            .then(response => response.json())
+            .then(data => {
+                displayRouteOnMap(data);
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+    function displayRouteOnMap(data) {
+        const linePath = [];
+        data.routes[0].sections.forEach(section => {
+            section.roads.forEach(road => {
+                for (let i = 0; i < road.vertexes.length; i += 2) {
+                    const lat = road.vertexes[i + 1];
+                    const lng = road.vertexes[i];
+                    const point = new naver.maps.LatLng(lat, lng);
+                    linePath.push(point);
+                }
+            });
+        });
+
+        polyline.setPath(linePath);
+        map.fitBounds(new naver.maps.LatLngBounds(linePath[0], linePath[linePath.length - 1]));
     }
 </script>
+
 </body>
 </html>

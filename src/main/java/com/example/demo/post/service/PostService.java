@@ -120,6 +120,7 @@ public class PostService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "KakaoAK " + kakaoApiKey);
+        System.out.print(kakaoApiKey);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 

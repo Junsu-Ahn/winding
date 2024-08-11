@@ -5,15 +5,23 @@ import com.example.demo.member.service.MemberService;
 import com.example.demo.post.entity.Post;
 import com.example.demo.post.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -45,28 +53,8 @@ public class PostController {
     }
 
 
-    @PostMapping("/create")
-    public String createPost(@RequestParam("title") String title,
-                             @RequestParam("description") String description,
-                             @RequestParam("departure") String departure,
-                             @RequestParam("departureLat") double departureLat,
-                             @RequestParam("departureLng") double departureLng,
-                             @RequestParam("destination") String destination,
-                             @RequestParam("destinationLat") double destinationLat,
-                             @RequestParam("destinationLng") double destinationLng,
-                             @RequestParam(value = "waypoints", required = false) List<String> waypoints,
-                             @RequestParam(value = "waypointLats", required = false) List<Double> waypointLats,
-                             @RequestParam(value = "waypointLngs", required = false) List<Double> waypointLngs,
-                             @RequestParam("image") MultipartFile imageFile,
-                             @AuthenticationPrincipal UserDetails userDetails,
-                             Model model) throws IOException {
 
-        String author = userDetails.getUsername();
-        Post post = postService.createPost(title, description, departure, departureLat, departureLng,
-                destination, destinationLat, destinationLng,
-                waypoints, waypointLats, waypointLngs, author, imageFile);
-        return "redirect:/posts";
-    }
+
 
     @GetMapping("/list")
     public String getAllPosts(Model model) {
