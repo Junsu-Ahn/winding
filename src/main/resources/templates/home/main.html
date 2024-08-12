@@ -19,7 +19,7 @@
             position: relative;
             width: 600px;
             height: 800px;
-            background-image: url('https://github.com/user-attachments/assets/f585e27e-18ab-4bb3-83f7-4ee74deb8cac');
+            background-image: url('https://github.com/user-attachments/assets/cc38c20e-18b4-4283-9162-d5ffc52ba8af');
             background-size: cover;
             background-repeat: no-repeat;
         }
@@ -67,10 +67,22 @@
             top: 40%;
             left: 70%;
         }
+         .guide-text {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            font-size: 20px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 <div class="map-container">
+    <div class="guide-text">지역을 선택해 주세요</div>
     <button id="button1" class="map-button">강원도</button>
     <button id="button2" class="map-button">경기도</button>
     <button id="button3" class="map-button">충남</button>

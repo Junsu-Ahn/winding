@@ -19,14 +19,14 @@ $(document).ready(function() {
     }
 
     showSlide(currentSlide);
-    setInterval(nextSlide, 5000); // 5초마다 자동 슬라이드
+    setInterval(nextSlide, 5000);
 
-    /* 인기 레시피 */
+    // 드라이브 코스 슬라이더
     function initializeSlider(section) {
         const prevBtn = section.find(".prev_btn");
         const nextBtn = section.find(".next_btn");
         const track = section.find(".slider_track");
-        const cards = section.find(".recipe_card");
+        const cards = section.find(".drive_card");
         let cardWidth = cards.outerWidth(true);
         const cardsPerPage = 6;
 
@@ -76,7 +76,7 @@ $(document).ready(function() {
         });
     }
 
-    const sections = $(".recipe_section");
+    const sections = $(".drive_section");
     sections.each(function() {
         initializeSlider($(this));
     });
