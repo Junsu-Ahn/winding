@@ -6,13 +6,31 @@
     <title>게시글 작성</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- 다음 주소 검색 API -->
     <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
-    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=aun2dmrzp7"></script>
+
+    <!-- 카카오 맵 API -->
+    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=56401609493145e78c3994a17c298292&libraries=services"></script>
+
+    <!-- jQuery 로드 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- JavaScript 파일을 마지막에 로드 -->
+    <script src="/js/Postjs/createPost.js" defer></script>
 </head>
 <body style="background-color: #f0f0f0;">
 <div class="container mt-5">
     <h1>게시글 작성</h1>
     <form id="routeForm">
+        <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" class="form-control" id="title" name="title" placeholder="제목을 입력하세요" required>
+        </div>
+        <div class="form-group">
+            <label for="description">내용</label>
+            <textarea class="form-control" id="description" name="description" rows="4" placeholder="내용을 입력하세요" required></textarea>
+        </div>
         <div class="form-group">
             <label for="departure">출발지</label>
             <input type="text" class="form-control" id="departure" name="departure" placeholder="출발지 주소" required readonly>
@@ -38,140 +56,5 @@
 
     <div id="map" style="width:100%;height:400px;margin-top:20px;"></div> <!-- 지도 추가 -->
 </div>
-
-<script>
-    // 다음 주소 검색 API 사용
-    function execDaumPostcode(targetId) {
-        new daum.Postcode({
-            oncomplete: function(data) {
-                var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
-                document.getElementById(targetId).value = addr;
-
-                // 주소를 좌표로 변환
-                getCoordinatesFromNaver(addr, targetId);
-            }
-        }).open();
-    }
-
-    // 네이버 지오코딩 API를 사용하여 주소를 좌표로 변환
-    function getCoordinatesFromNaver(address, targetId) {
-        fetch(`/api/geocode?address=${encodeURIComponent(address)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'OK' && data.addresses.length > 0) {
-                    const location = data.addresses[0];
-                    document.getElementById(targetId + 'Lat').value = location.y;
-                    document.getElementById(targetId + 'Lng').value = location.x;
-                } else {
-                    alert("주소를 좌표로 변환하는 데 실패했습니다.");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("주소를 좌표로 변환하는 중 오류가 발생했습니다.");
-            });
-    }
-
-    let waypointCount = 0;
-
-    function addWaypoint() {
-        waypointCount++;
-        const waypointContainer = document.createElement('div');
-        waypointContainer.className = 'form-group';
-        waypointContainer.id = `waypoint-group-${waypointCount}`;
-
-        waypointContainer.innerHTML = `
-            <label for="waypoint${waypointCount}">경유지 ${waypointCount}</label>
-            <input type="text" class="form-control" id="waypoint${waypointCount}" name="waypoints[${waypointCount}]" placeholder="경유지 주소" required readonly>
-            <input type="hidden" id="waypoint${waypointCount}Lat" name="waypointLats[${waypointCount}]">
-            <input type="hidden" id="waypoint${waypointCount}Lng" name="waypointLngs[${waypointCount}]">
-            <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('waypoint${waypointCount}')">주소 검색</button>
-            <button type="button" class="btn btn-danger mt-2" onclick="removeWaypoint(${waypointCount})">경유지 삭제</button>
-        `;
-
-        document.getElementById('waypoints-container').appendChild(waypointContainer);
-    }
-
-    function removeWaypoint(id) {
-        const waypointContainer = document.getElementById(`waypoint-group-${id}`);
-        waypointContainer.remove();
-    }
-
-    function submitRoute() {
-        const formElement = document.getElementById('routeForm');
-        const formData = new FormData(formElement);
-        const jsonData = {};
-        formData.forEach((value, key) => jsonData[key] = value);
-
-        console.log("Sending data to API:", jsonData); // 데이터를 콘솔에 로그 출력
-
-        fetch('/api/route', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(jsonData),
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw err; });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log(data);
-            displayRouteOnMap(data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("경로를 불러오는 중 오류가 발생했습니다.");
-        });
-    }
-
-    let map;
-    let polyline;
-
-    document.addEventListener("DOMContentLoaded", function() {
-        map = new naver.maps.Map(document.getElementById('map'), {
-            center: new naver.maps.LatLng(37.394727, 127.110153),
-            zoom: 10
-        });
-
-        polyline = new naver.maps.Polyline({
-            map: map,
-            path: [],
-            strokeWeight: 5,
-            strokeColor: '#FF0000',
-            strokeOpacity: 0.8,
-            strokeStyle: 'solid'
-        });
-
-        // 서버에서 경로 데이터를 가져와서 지도에 표시
-        fetch('/posts/route')
-            .then(response => response.json())
-            .then(data => {
-                displayRouteOnMap(data);
-            })
-            .catch(error => console.error('Error:', error));
-    });
-
-    function displayRouteOnMap(data) {
-        const linePath = [];
-        data.routes[0].sections.forEach(section => {
-            section.roads.forEach(road => {
-                for (let i = 0; i < road.vertexes.length; i += 2) {
-                    const lat = road.vertexes[i + 1];
-                    const lng = road.vertexes[i];
-                    const point = new naver.maps.LatLng(lat, lng);
-                    linePath.push(point);
-                }
-            });
-        });
-
-        polyline.setPath(linePath);
-        map.fitBounds(new naver.maps.LatLngBounds(linePath[0], linePath[linePath.length - 1]));
-    }
-</script>
-
 </body>
 </html>

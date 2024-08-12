@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,6 +26,7 @@ public class PostService {
                            String destination, double destinationLat, double destinationLng,
                            List<String> waypoints, List<Double> waypointLats, List<Double> waypointLngs,
                            String author, MultipartFile imageFile) throws IOException {
+
         Post post = new Post();
         post.setTitle(title);
         post.setDescription(description);
@@ -35,6 +37,7 @@ public class PostService {
         post.setDestinationLat(destinationLat);
         post.setDestinationLng(destinationLng);
         post.setAuthor(author);
+        post.setCreateDate(LocalDateTime.now());
 
         if (waypoints != null && !waypoints.isEmpty()) {
             for (int i = 0; i < waypoints.size(); i++) {
@@ -51,6 +54,7 @@ public class PostService {
 
         return postRepository.save(post);
     }
+
 
     public List<Post> getAllPosts() {
         return postRepository.findAll();
