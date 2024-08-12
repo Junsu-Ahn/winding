@@ -52,15 +52,36 @@ function removeWaypoint(id) {
 }
 
 function submitRoute() {
-    const formElement = document.getElementById('routeForm');
-    const formData = new FormData(formElement);
-    const jsonData = {};
-    formData.forEach((value, key) => jsonData[key] = value);
+    const departureLat = document.getElementById('departureLat').value;
+    const departureLng = document.getElementById('departureLng').value;
+    const destinationLat = document.getElementById('destinationLat').value;
+    const destinationLng = document.getElementById('destinationLng').value;
 
-    console.log("Sending data to API:", jsonData); // 데이터를 콘솔에 로그 출력
+    const waypoints = [];
+    for (let i = 1; i <= waypointCount; i++) {
+        const waypointLat = document.getElementById(`waypoint${i}Lat`).value;
+        const waypointLng = document.getElementById(`waypoint${i}Lng`).value;
+        if (waypointLat && waypointLng) {
+            waypoints.push({
+                lat: waypointLat,
+                lng: waypointLng
+            });
+        }
+    }
 
-    // 지도를 초기화합니다.
-    clearMap();
+    const jsonData = {
+        departure: {
+            lat: departureLat,
+            lng: departureLng
+        },
+        destination: {
+            lat: destinationLat,
+            lng: destinationLng
+        },
+        waypoints: waypoints
+    };
+
+    console.log("Sending data to API:", jsonData); // 콘솔에 데이터 로그 출력
 
     fetch('/api/route', {
         method: 'POST',
