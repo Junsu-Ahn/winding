@@ -1,73 +1,119 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Post List</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <style>
-        .thumbnail {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 목록</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!--    Bootstrap CSS-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/postListPage.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/6a4a75455d.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
-<body>
-<section class="container mx-auto p-5">
-    <h1 class="text-2xl font-bold text-center mb-5">Post List</h1>
-    <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        <li th:each="post : ${posts}" class="flex flex-col group border border-gray-300 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-            <a th:href="@{|/post/detail/${post.id}|}">
-                <img th:src="@{${post.thumbnailImageUrl} ?: '/images/default-thumbnail.jpg'}" alt="Post Image" class="thumbnail">
-            </a>
-            <div class="p-4">
-                <a th:href="@{|/post/detail/${post.id}|}" class="text-lg font-semibold text-blue-600 hover:underline" th:text="${post.title}"></a>
-                <p class="text-gray-600 mt-2" th:text="${post.description}"></p>
-            </div>
-        </li>
-    </ul>
 
-    <!-- 페이징 처리 시작 -->
-    <div class="flex justify-center mt-5">
-        <ul class="flex list-none">
-            <li th:classappend="${paging.hasPrevious ? '' : 'disabled'}">
-                <a class="px-3 py-1 border border-gray-300 rounded-l-lg cursor-pointer" th:href="${paging.hasPrevious ? @{|/post/list?page=${paging.number - 1}|} : '#'}">
-                    <span>&lt;</span>
+<body style="background-color: #f0f0f0;">
+<div class="top_bar_section">
+    <div class="top_container">
+        <div class="nav_bar">
+            <div class="main_logo">
+                <a href="/">
+                    <img src="https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2" alt="메인메뉴">
                 </a>
-            </li>
+            </div>
+            <div class="search_bar">
+                <form action="#" th:action="@{/posts/search}" method="get">
+                    <input type="text" name="keyword" placeholder="게시글 검색" th:value="${keyword}">
+                    <button class="custom-btn btn-13" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+            </div>
+            <div class="user_page">
+                <a sec:authorize="isAnonymous()" href="/member/login">
+                    <img src="https://github.com/user-attachments/assets/156152342/b0693f56-339e-4b19-9c69-49bce1e6a43f" alt="로그인">
+                </a>
+                <a sec:authorize="isAuthenticated()" id="userIcon" style="cursor: pointer;">
+                    <img th:src="${currentMember != null && currentMember.profileImg != null ? currentMember.profileImg : 'https://github.com/Junsu-Ahn/cookers/assets/134615615/5c0de0e0-b917-47ae-94d4-d8ad366dce7f'}" alt="프로필">
+                </a>
+                <div class="arrow-up" th:if="${currentMember} != null"></div>
+                <ul class="user_two_menu" th:if="${currentMember} != null">
+                    <li><a sec:authorize="isAuthenticated()" th:href="@{'/member/' + ${currentMember.nickname}}">내 게시글</a></li>
+                    <li><a sec:authorize="isAuthenticated()" th:href="@{/member/edit}">회원 정보 수정</a></li>
+                    <li><a href="/member/logout">로그아웃</a></li>
+                </ul>
+                <a href="/posts/create"><img src="https://github.com/user-attachments/assets/156152342/00255179-03e9-4a7e-a8c8-d49ef5db619c" alt="글쓰기"></a>
+            </div>
+        </div>
+    </div>
+    <div class="middle_container">
+        <div class="nav_bar">
+            <ul class="before_after">
+                <li><a class="custom-nav nav-13" href="/">메 인</a></li>
+                <li><a class="custom-nav nav-13" href="/posts/list">게시글 목록</a></li>
+                <li><a class="custom-nav nav-13" href="/">랭킹</a></li> <!-- 수정된 부분 -->
+                <li><a class="custom-nav nav-13" href="/">스토어</a></li> <!-- 수정된 부분 -->
+            </ul>
+        </div>
+    </div>
+</div>
 
-            <li th:each="page : ${#numbers.sequence(0, paging.totalPages-1)}"
-                th:if="${page >= paging.number-5 and page <= paging.number+5}"
-                th:classappend="${page == paging.number ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}"
-                class="px-3 py-1 border border-gray-300 cursor-pointer"
-            >
-                <a th:href="@{|/post/list?page=${page}|}" th:text="${page + 1}"></a>
-            </li>
-
-            <li th:classappend="${paging.hasNext ? '' : 'disabled'}">
-                <a class="px-3 py-1 border border-gray-300 rounded-r-lg cursor-pointer" th:href="${paging.hasNext ? @{|/post/list?page=${paging.number + 1}|} : '#'}">
-                    <span>&gt;</span>
+<div class="bottom_bar_section">
+    <div class="top_container"></div>
+    <div class="bottom_container">
+        <h1 class="title_menu" th:text="${categoryValue} != null ? ${categoryValue} : '전체 게시글 보기'"></h1>
+        <ul class="used_page">
+            <li class="post_menu" th:each="post : ${posts}">
+                <a th:href="@{/posts/{id}(id=${post.id})}">
+                    <div class="post_img">
+                        <img th:src="${post.image != null ? post.image : '/path/to/main-logo.jpg'}" alt="게시글 이미지" style="width: 210px; height: 210px;">
+                    </div>
+                    <div class="post_text">
+                        <p class="s_text" th:text="${post.title}"></p>
+                        <div>
+                            <p class="b_text" th:text="${post.description}"></p>
+                            <div class="icon"><i class="fa-solid fa-eye"></i>
+                                <div class="view" th:text="${post.views}"></div>
+                            </div>
+                        </div>
+                    </div>
                 </a>
             </li>
         </ul>
     </div>
-</section>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $(".page-link").on("click", function () {
-            $("#page").val($(this).data("page"));
-            $("#searchForm").submit();
-        });
-
-        $("#btn_search").on("click", function () {
-            $("#kw").val($("#search_kw").val());
-            $("#page").val(0);
-            $("#searchForm").submit();
-        });
-    });
-</script>
+    <!-- 페이징 처리 시작 -->
+    <div th:if="${!posts.isEmpty()}" style="margin: 40px;">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${!posts.hasPrevious} ? 'disabled'">
+                <a class="page-link" th:href="@{|${categoryValue != null ? categoryValue : '/posts/list'}?page=0|}">
+                    <span>&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item" th:classappend="${!posts.hasPrevious} ? 'disabled'">
+                <a class="page-link" th:href="@{|?page=${posts.number-1}|}">
+                    <span>&lt;</span>
+                </a>
+            </li>
+            <li th:each="page: ${#numbers.sequence(0, posts.totalPages-1)}"
+                th:if="${page >= posts.number-5 and page <= posts.number+5}"
+                th:classappend="${page == posts.number} ? 'active'"
+                class="page-item">
+                <a th:text="${page+1}" class="page-link" th:href="@{|?page=${page}|}"></a>
+            </li>
+            <li class="page-item" th:classappend="${!posts.hasNext} ? 'disabled'">
+                <a class="page-link" th:href="@{|?page=${posts.number+1}|}">
+                    <span>&gt;</span>
+                </a>
+            </li>
+            <li class="page-item arrow_2" th:classappend="${posts.number == posts.totalPages-1} ? 'disabled'">
+                <a class="page-link" th:href="@{|${categoryValue != null ? categoryValue : '/posts/list'}?page=${posts.totalPages - 1}|}">
+                    <span>&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- 페이징 처리 끝 -->
+</div>
+<script th:src="@{/js/postListPage.js}"></script>
 </body>
 </html>

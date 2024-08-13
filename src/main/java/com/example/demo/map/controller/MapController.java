@@ -52,6 +52,7 @@ public class MapController {
             waypoints = waypointsBuilder.toString();
         }
 
+
         // 3. 경로 계산 서비스 호출
         String routeData = mapService.getRoute(departureCoords, destinationCoords, waypoints);
 

@@ -6,22 +6,24 @@ function execDaumPostcode(targetId) {
             document.getElementById(targetId).value = addr;
 
             // 주소를 좌표로 변환
-            getCoordinatesFromKakao(addr, targetId);
+            getCoordinatesFromNaver(addr, targetId);
         }
     }).open();
 }
 
-// 카카오 지오코딩 API를 사용하여 주소를 좌표로 변환
-function getCoordinatesFromKakao(address, targetId) {
-    var geocoder = new kakao.maps.services.Geocoder();
+// Naver 지오코딩 API를 사용하여 주소를 좌표로 변환
+function getCoordinatesFromNaver(address, targetId) {
+    naver.maps.Service.geocode({query: address}, function(status, response) {
+        if (status === naver.maps.Service.Status.ERROR) {
+            return alert('주소를 좌표로 변환하는 데 실패했습니다.');
+        }
 
-    geocoder.addressSearch(address, function(result, status) {
-        if (status === kakao.maps.services.Status.OK) {
-            var coords = result[0];
-            document.getElementById(targetId + 'Lat').value = coords.y;
-            document.getElementById(targetId + 'Lng').value = coords.x;
+        if (response.v2.addresses.length > 0) {
+            var result = response.v2.addresses[0];
+            document.getElementById(targetId + 'Lat').value = result.y;
+            document.getElementById(targetId + 'Lng').value = result.x;
         } else {
-            alert("주소를 좌표로 변환하는 데 실패했습니다.");
+            alert("주소를 찾을 수 없습니다.");
         }
     });
 }
@@ -51,112 +53,116 @@ function removeWaypoint(id) {
     waypointContainer.remove();
 }
 
+// Reverse Geocoding을 사용하여 도로에 가까운 위치로 조정
+function adjustToNearestRoad(lat, lng, callback) {
+    const coords = `${lng},${lat}`;  // 위도와 경도를 'lng,lat' 형식으로 설정
+    const orders = 'roadaddr,addr';  // 도로명 주소와 일반 주소를 요청 순서대로 설정
+
+    naver.maps.Service.reverseGeocode({
+        coords: coords,
+        orders: orders
+    }, function(status, response) {
+        if (status === naver.maps.Service.Status.ERROR || !response.v2 || !response.v2.results) {
+            alert('Reverse Geocoding 오류가 발생했습니다.');
+            return callback(null);
+        }
+
+        if (response.v2.results.length > 0) {
+            const roadAddress = response.v2.results.find(result => result.name === 'roadaddr');
+            if (roadAddress && roadAddress.location) {
+                const roadCoords = roadAddress.location;
+                callback({
+                    lat: roadCoords.y,
+                    lng: roadCoords.x
+                });
+            } else {
+                alert("도로 주소를 찾을 수 없습니다.");
+                callback(null);
+            }
+        } else {
+            alert("결과가 없습니다.");
+            callback(null);
+        }
+    });
+}
+
+
 function submitRoute() {
     const departureLat = document.getElementById('departureLat').value;
     const departureLng = document.getElementById('departureLng').value;
     const destinationLat = document.getElementById('destinationLat').value;
     const destinationLng = document.getElementById('destinationLng').value;
 
-    const waypoints = [];
-    for (let i = 1; i <= waypointCount; i++) {
-        const waypointLat = document.getElementById(`waypoint${i}Lat`).value;
-        const waypointLng = document.getElementById(`waypoint${i}Lng`).value;
-        if (waypointLat && waypointLng) {
-            waypoints.push({
-                lat: waypointLat,
-                lng: waypointLng
-            });
+    // 출발지와 도착지 좌표를 도로에 가까운 위치로 조정
+    adjustToNearestRoad(departureLat, departureLng, function(adjustedStart) {
+        if (!adjustedStart) {
+            alert("출발지의 도로 근처 위치를 찾을 수 없습니다.");
+            return;
         }
+
+        adjustToNearestRoad(destinationLat, destinationLng, function(adjustedGoal) {
+            if (!adjustedGoal) {
+                alert("도착지의 도로 근처 위치를 찾을 수 없습니다.");
+                return;
+            }
+
+            // 경로 요청
+            const uriPath = "https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving";
+            const start = `${adjustedStart.lng},${adjustedStart.lat}`;
+            const goal = `${adjustedGoal.lng},${adjustedGoal.lat}`;
+            const option = "trafast";
+
+            fetch(`${uriPath}?start=${start}&goal=${goal}&option=${option}`, {
+                method: 'GET',
+                headers: {
+                    'X-NCP-APIGW-API-KEY-ID': 'aun2dmrzp7',
+                    'X-NCP-APIGW-API-KEY': 'oTt8xRONK83duRvoXGMKjOlQ1NYxXwPq3monIcnl'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 0) {
+                    displayRouteOnMap(data.route.trafast[0].path);
+                } else {
+                    alert('경로를 불러오는 데 실패했습니다: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+}
+
+function displayRouteOnMap(path) {
+    clearMap();
+
+    if (!path || path.length === 0) {
+        alert('경로 데이터가 비어 있습니다.');
+        return;
     }
 
-    const jsonData = {
-        departure: {
-            lat: departureLat,
-            lng: departureLng
-        },
-        destination: {
-            lat: destinationLat,
-            lng: destinationLng
-        },
-        waypoints: waypoints
-    };
+    const pathCoords = path.map(point => new naver.maps.LatLng(point[1], point[0]));
 
-    console.log("Sending data to API:", jsonData); // 콘솔에 데이터 로그 출력
-
-    fetch('/api/route', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(jsonData),
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { throw err; });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log(data);
-        displayRouteOnMap(data);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert("경로를 불러오는 중 오류가 발생했습니다.");
+    const polyline = new naver.maps.Polyline({
+        map: map,
+        path: pathCoords,
+        strokeColor: '#5347AA',
+        strokeWeight: 6
     });
+
+    map.setCenter(pathCoords[0]);
 }
 
 let map;
 let markers = [];
 
 document.addEventListener("DOMContentLoaded", function() {
-    map = new kakao.maps.Map(document.getElementById('map'), {
-        center: new kakao.maps.LatLng(37.394727, 127.110153),
-        level: 10
+    map = new naver.maps.Map(document.getElementById('map'), {
+        center: new naver.maps.LatLng(37.394727, 127.110153),
+        zoom: 10
     });
 });
 
 function clearMap() {
     markers.forEach(marker => marker.setMap(null));
     markers = [];
-}
-
-function displayRouteOnMap(data) {
-    const locations = [];
-
-    const departureLat = parseFloat(document.getElementById('departureLat').value);
-    const departureLng = parseFloat(document.getElementById('departureLng').value);
-    if (!isNaN(departureLat) && !isNaN(departureLng)) {
-        locations.push({ lat: departureLat, lng: departureLng });
-    }
-
-    const destinationLat = parseFloat(document.getElementById('destinationLat').value);
-    const destinationLng = parseFloat(document.getElementById('destinationLng').value);
-    if (!isNaN(destinationLat) && !isNaN(destinationLng)) {
-        locations.push({ lat: destinationLat, lng: destinationLng });
-    }
-
-    for (let i = 1; i <= waypointCount; i++) {
-        const waypointLat = parseFloat(document.getElementById(`waypoint${i}Lat`).value);
-        const waypointLng = parseFloat(document.getElementById(`waypoint${i}Lng`).value);
-        if (!isNaN(waypointLat) && !isNaN(waypointLng)) {
-            locations.push({ lat: waypointLat, lng: waypointLng });
-        }
-    }
-
-    locations.forEach(location => {
-        const marker = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(location.lat, location.lng),
-            map: map
-        });
-        markers.push(marker);
-    });
-
-    if (locations.length > 0) {
-        const bounds = new kakao.maps.LatLngBounds();
-        locations.forEach(location => {
-            bounds.extend(new kakao.maps.LatLng(location.lat, location.lng));
-        });
-        map.setBounds(bounds);
-    }
 }

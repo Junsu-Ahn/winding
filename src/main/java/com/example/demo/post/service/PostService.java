@@ -22,10 +22,10 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public Post createPost(String title, String description, String departure, double departureLat, double departureLng,
-                           String destination, double destinationLat, double destinationLng,
-                           List<String> waypoints, List<Double> waypointLats, List<Double> waypointLngs,
-                           String author, MultipartFile imageFile) throws IOException {
+    public void createPost(String title, String description, String departure, double departureLat,
+                           double departureLng, String destination, double destinationLat,
+                           double destinationLng, List<String> waypoints, List<Double> waypointLats,
+                           List<Double> waypointLngs, String author, MultipartFile imageFile) throws IOException {
 
         Post post = new Post();
         post.setTitle(title);
@@ -36,25 +36,19 @@ public class PostService {
         post.setDestination(destination);
         post.setDestinationLat(destinationLat);
         post.setDestinationLng(destinationLng);
+        post.setWaypoints(waypoints);
+        post.setWaypointLats(waypointLats);
+        post.setWaypointLngs(waypointLngs);
         post.setAuthor(author);
-        post.setCreateDate(LocalDateTime.now());
 
-        if (waypoints != null && !waypoints.isEmpty()) {
-            for (int i = 0; i < waypoints.size(); i++) {
-                String waypoint = waypoints.get(i);
-                double waypointLat = waypointLats.get(i);
-                double waypointLng = waypointLngs.get(i);
-                post.addWaypoint(waypoint, waypointLat, waypointLng);  // Post 엔티티에서 경유지를 추가하는 메서드 호출
-            }
+        // 이미지 파일 처리
+        if (!imageFile.isEmpty()) {
+            byte[] imageBytes = imageFile.getBytes();
+            post.setImage(imageBytes);
         }
 
-        if (imageFile != null && !imageFile.isEmpty()) {
-            post.setImage(imageFile.getBytes());
-        }
-
-        return postRepository.save(post);
+        postRepository.save(post);
     }
-
 
     public List<Post> getAllPosts() {
         return postRepository.findAll();

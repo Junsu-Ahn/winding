@@ -19,10 +19,6 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member; // Member와의 관계 추가
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private String title;
     private String description;
     private String departure;

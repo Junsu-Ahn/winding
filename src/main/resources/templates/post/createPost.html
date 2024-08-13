@@ -10,8 +10,8 @@
     <!-- 다음 주소 검색 API -->
     <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
 
-    <!-- 카카오 맵 API -->
-    <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=56401609493145e78c3994a17c298292&libraries=services"></script>
+    <!-- Naver Map API -->
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=aun2dmrzp7&submodules=geocoder,directions"></script>
 
     <!-- jQuery 로드 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -22,7 +22,7 @@
 <body style="background-color: #f0f0f0;">
 <div class="container mt-5">
     <h1>게시글 작성</h1>
-    <form id="routeForm">
+    <form id="routeForm" method="post" action="/posts/create" enctype="multipart/form-data">
         <div class="form-group">
             <label for="title">제목</label>
             <input type="text" class="form-control" id="title" name="title" placeholder="제목을 입력하세요" required>
@@ -50,8 +50,15 @@
             <!-- 경유지 필드가 추가될 곳 -->
         </div>
         <button type="button" class="btn btn-secondary mt-2" onclick="addWaypoint()">경유지 추가</button>
+        <div class="form-group mt-3">
+            <label for="image">이미지 업로드</label>
+            <input type="file" class="form-control" id="image" name="image">
+        </div>
         <!-- 확인 버튼 추가 -->
         <button type="button" class="btn btn-primary mt-2" onclick="submitRoute()">확인</button>
+        <!-- 게시글 등록 버튼 추가 -->
+        <button type="submit" class="btn btn-primary mt-2">게시글 등록</button>
+
     </form>
 
     <div id="map" style="width:100%;height:400px;margin-top:20px;"></div> <!-- 지도 추가 -->

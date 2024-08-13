@@ -52,8 +52,28 @@ public class PostController {
         return "post/createPost";
     }
 
+    @PostMapping("/create")
+    public String createPost(@RequestParam("title") String title,
+                             @RequestParam("description") String description,
+                             @RequestParam("departure") String departure,
+                             @RequestParam("departureLat") double departureLat,
+                             @RequestParam("departureLng") double departureLng,
+                             @RequestParam("destination") String destination,
+                             @RequestParam("destinationLat") double destinationLat,
+                             @RequestParam("destinationLng") double destinationLng,
+                             @RequestParam(value = "waypoints", required = false) List<String> waypoints,
+                             @RequestParam(value = "waypointLats", required = false) List<Double> waypointLats,
+                             @RequestParam(value = "waypointLngs", required = false) List<Double> waypointLngs,
+                             @RequestParam("image") MultipartFile imageFile,
+                             @AuthenticationPrincipal UserDetails userDetails) throws IOException {
 
+        String author = userDetails.getUsername();
+        postService.createPost(title, description, departure, departureLat, departureLng,
+                destination, destinationLat, destinationLng, waypoints, waypointLats, waypointLngs,
+                author, imageFile);
 
+        return "redirect:/posts/list";
+    }
 
 
     @GetMapping("/list")
@@ -63,6 +83,7 @@ public class PostController {
         return "post/postList";
     }
 
+    // 게시글 상세 보기
     @GetMapping("/{id}")
     public String getPostById(@PathVariable Long id, Model model) {
         Post post = postService.getPostById(id);
