@@ -6,6 +6,9 @@ import com.example.demo.post.entity.Post;
 import com.example.demo.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,58 +71,61 @@ public class PostController {
                              @RequestParam("image") MultipartFile imageFile,
                              @AuthenticationPrincipal UserDetails userDetails) throws IOException {
 
+        if (waypoints == null) {
+            waypoints = List.of();
+        }
+        if (waypointLats == null) {
+            waypointLats = List.of();
+        }
+        if (waypointLngs == null) {
+            waypointLngs = List.of();
+        }
+
         String author = userDetails.getUsername();
         postService.createPost(title, description, departure, departureLat, departureLng,
                 destination, destinationLat, destinationLng, waypoints, waypointLats, waypointLngs,
                 author, imageFile);
 
-        return "redirect:/posts/list";
+        return "post/postList";
     }
 
 
     @GetMapping("/list")
-    public String getAllPosts(Model model) {
-        List<Post> posts = postService.getAllPosts();
+    public String list(Model model) {
+        List<Post> posts = this.postService.getAllPosts();
+
         model.addAttribute("posts", posts);
+
         return "post/postList";
     }
 
+
     // 게시글 상세 보기
-    @GetMapping("/{id}")
-    public String getPostById(@PathVariable Long id, Model model) {
+    @GetMapping("/detail/{id}")
+    public String getPostById(@PathVariable("id") Long id, Model model) {
         Post post = postService.getPostById(id);
+
+        if (post == null) {
+            return "redirect:/posts/list"; // 포스트가 없는 경우 목록으로 리다이렉트
+        }
+        String formattedCreateDate = post.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         model.addAttribute("post", post);
+        model.addAttribute("formattedCreateDate", formattedCreateDate);
+
+        if (post.getModifyDate() != null) {
+            model.addAttribute("formattedModifyDate", post.getModifyDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        }
         return "post/postDetail";
     }
 
-    @PutMapping("/{id}")
-    public String updatePost(@PathVariable Long id,
-                             @RequestParam("title") String title,
-                             @RequestParam("description") String description,
-                             @RequestParam("departure") String departure,
-                             @RequestParam("departureLat") double departureLat,
-                             @RequestParam("departureLng") double departureLng,
-                             @RequestParam("destination") String destination,
-                             @RequestParam("destinationLat") double destinationLat,
-                             @RequestParam("destinationLng") double destinationLng,
-                             @RequestParam(value = "waypoints", required = false) List<String> waypoints,
-                             @RequestParam(value = "waypointLats", required = false) List<Double> waypointLats,
-                             @RequestParam(value = "waypointLngs", required = false) List<Double> waypointLngs,
-                             @RequestParam("image") MultipartFile imageFile,
-                             @AuthenticationPrincipal UserDetails userDetails,
-                             Model model) throws IOException {
-        String author = userDetails.getUsername();
-        Post post = postService.updatePost(id, title, description, departure, departureLat, departureLng,
-                destination, destinationLat, destinationLng,
-                waypoints, waypointLats, waypointLngs, author, imageFile);
-        model.addAttribute("post", post);
-        return "redirect:/posts";
-    }
-    @DeleteMapping("/{id}")
+
+
+    @DeleteMapping("/detail/{id}")
     public String deletePost(@PathVariable Long id) {
         postService.deletePost(id);
-        return "redirect:/posts";
+        return "redirect:/posts/list";  // 경로 수정
     }
+
 
 
     @GetMapping("/route")

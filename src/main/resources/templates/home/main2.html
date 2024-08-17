@@ -8,58 +8,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/mainPage.css">
+    <link rel="stylesheet" href="css/layout/layout.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/mainjs/mainPage.js"></script>
+    <script src="js/layout/layout.js"></script>
 </head>
-
 <body>
-<div class="top_bar_section">
-    <div class="nav_bar">
-        <div class="main_logo">
-            <a href="/">
-                <img src="https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2" alt="메인메뉴">
-            </a>
-        </div>
-        <!-- 가운데 메뉴 섹션 -->
-        <nav class="menu_section">
-            <ul class="main_menu">
-                <li><a href="/map">지도로 보기</a></li>
-                <li class="has_submenu"><a href="#">지역별</a>
-                    <ul class="submenu">
-                        <li><a href="/region/gyeongnam">경기도</a></li>
-                        <li><a href="/region/gangwon">강원도</a></li>
-                        <li><a href="/region/gyeongnam">경상남도</a></li>
-                        <li><a href="/region/gyeongbuk">경상북도</a></li>
-                        <li><a href="/region/chungnam">충청남도</a></li>
-                        <li><a href="/region/chungbuk">충청북도</a></li>
-                        <li><a href="/region/jeonnam">전라남도</a></li>
-                        <li><a href="/region/jeonbuk">전라북도</a></li>
-                    </ul>
-                </li>
-                <li><a href="/ranking">랭킹 확인하기</a></li>
-                <li><a href="/store">스토어</a></li>
-            </ul>
-        </nav>
 
-        <!-- 오른쪽 섹션 -->
-        <div class="right_section">
-            <div class="search_bar">
-                <form action="#" method="get">
-                    <input type="text" name="keyword" placeholder="드라이브 코스 검색">
-                    <button class="custom-btn btn-13" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-                </form>
-            </div>
-            <div class="user_page">
-                <a sec:authorize="isAnonymous()" href="/member/login">로그인</a>
-                <a sec:authorize="isAuthenticated()" id="userIcon" style="cursor: pointer;">
-                    <img th:src="${currentMember != null && currentMember.profileImg != null ? currentMember.profileImg : 'https://github.com/Junsu-Ahn/cookers/assets/134615615/5c0de0e0-b917-47ae-94d4-d8ad366dce7f'}" alt="프로필">
-                </a>
-                <a sec:authorize="isAuthenticated()" href="/member/logout">로그아웃</a>
-                <a href="/posts/create">코스 작성</a>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- 공통 상단 바 삽입 -->
+<div th:replace="fragments/topbar :: topbar"></div>
 
-<!-- 배너 섹션 추가 -->
+<!-- 본문 내용 -->
 <div class="banner_section">
     <div class="slider">
         <div class="slide">
@@ -98,13 +57,13 @@
     </ul>
 </div>
 
-
+<!-- footer는 메인 페이지에만 포함 -->
 <footer>
     <div class="foot_container">
         <div class="foo_div1">
             <span>(주) Winding</span> | <span>대표 : 안준수</span> | <span>사업자등록번호 : 000-00-00000</span>
             <p>주소 : 대전 서구 대덕대로 179 9층 (우)35230</p>
-            <p>Copyright © Oh!naeyo Corp. All rights reserved.</p>
+            <p>Copyright © Let's Roll! Winding Corp. All rights reserved.</p>
         </div>
         <div class="foo_div2">
             <div>Let's Roll! Winding</div>
@@ -117,7 +76,6 @@
         </div>
     </div>
 </footer>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="js/mainjs/mainPage.js"></script>
+
 </body>
 </html>

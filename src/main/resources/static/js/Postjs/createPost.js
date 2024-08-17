@@ -86,14 +86,13 @@ function adjustToNearestRoad(lat, lng, callback) {
     });
 }
 
-
 function submitRoute() {
     const departureLat = document.getElementById('departureLat').value;
     const departureLng = document.getElementById('departureLng').value;
     const destinationLat = document.getElementById('destinationLat').value;
     const destinationLng = document.getElementById('destinationLng').value;
 
-    // 출발지와 도착지 좌표를 도로에 가까운 위치로 조정
+    // 출발지와 도착지 좌표를 도로에 가까운 위치로 조정 후 경로 요청
     adjustToNearestRoad(departureLat, departureLng, function(adjustedStart) {
         if (!adjustedStart) {
             alert("출발지의 도로 근처 위치를 찾을 수 없습니다.");

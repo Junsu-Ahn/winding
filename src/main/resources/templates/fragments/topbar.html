@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+<div class="top_bar_section" th:fragment="topbar">
+  <div class="nav_bar">
+    <div class="main_logo">
+      <a href="/">
+        <img src="https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2" alt="메인메뉴">
+      </a>
+    </div>
+    <!-- 가운데 메뉴 섹션 -->
+    <nav class="menu_section">
+      <ul class="main_menu">
+        <li><a href="/map">지도로 보기</a></li>
+        <li class="has_submenu"><a href="#">지역별</a>
+          <ul class="submenu">
+            <li><a href="/region/gyeongnam">경기도</a></li>
+            <li><a href="/region/gangwon">강원도</a></li>
+            <li><a href="/region/gyeongnam">경상남도</a></li>
+            <li><a href="/region/gyeongbuk">경상북도</a></li>
+            <li><a href="/region/chungnam">충청남도</a></li>
+            <li><a href="/region/chungbuk">충청북도</a></li>
+            <li><a href="/region/jeonnam">전라남도</a></li>
+            <li><a href="/region/jeonbuk">전라북도</a></li>
+          </ul>
+        </li>
+        <li><a href="/ranking">랭킹 확인하기</a></li>
+        <li><a href="/store">스토어</a></li>
+      </ul>
+    </nav>
+    <!-- 오른쪽 섹션 -->
+    <div class="right_section">
+      <div class="search_bar">
+        <form action="#" method="get">
+          <input type="text" name="keyword" placeholder="드라이브 코스 검색">
+          <button class="custom-btn btn-13" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </form>
+      </div>
+      <div class="user_page">
+        <a sec:authorize="isAnonymous()" href="/member/login">로그인</a>
+        <a sec:authorize="isAuthenticated()" id="userIcon" style="cursor: pointer;">
+          <img th:src="${currentMember != null && currentMember.profileImg != null ? currentMember.profileImg : 'https://github.com/Junsu-Ahn/cookers/assets/134615615/5c0de0e0-b917-47ae-94d4-d8ad366dce7f'}" alt="프로필">
+        </a>
+        <a sec:authorize="isAuthenticated()" href="/member/logout">로그아웃</a>
+        <a href="/posts/create">코스 작성</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
