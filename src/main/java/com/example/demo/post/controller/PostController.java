@@ -46,13 +46,11 @@ public class PostController {
 
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
-            model.addAttribute("author", userDetails.getUsername());
-            model.addAttribute("userAddress", member.getAddress()); // 사용자의 주소를 모델에 추가
+            model.addAttribute("member", member); // Member 객체를 모델에 추가
         } else {
-            model.addAttribute("author", userDetails.getUsername());
-            model.addAttribute("userAddress", "주소 정보 없음"); // 기본값 설정 등
+            // 사용자가 존재하지 않는 경우 예외 처리 등을 추가할 수 있습니다.
+            return "redirect:/error"; // 적절한 오류 페이지로 리다이렉트
         }
-
         return "post/createPost";
     }
 
@@ -69,6 +67,7 @@ public class PostController {
                              @RequestParam(value = "waypointLats", required = false) List<Double> waypointLats,
                              @RequestParam(value = "waypointLngs", required = false) List<Double> waypointLngs,
                              @RequestParam("image") MultipartFile imageFile,
+                             @RequestParam("memberId") Long memberId,
                              @AuthenticationPrincipal UserDetails userDetails) throws IOException {
 
         if (waypoints == null) {
@@ -81,12 +80,13 @@ public class PostController {
             waypointLngs = List.of();
         }
 
-        String author = userDetails.getUsername();
-        postService.createPost(title, description, departure, departureLat, departureLng,
-                destination, destinationLat, destinationLng, waypoints, waypointLats, waypointLngs,
-                author, imageFile);
+        Member member = memberService.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
 
-        return "post/postList";
+        postService.createPost(title, description, departure, departureLat, departureLng, destination,
+                destinationLat, destinationLng, waypoints, waypointLats, waypointLngs, userDetails.getUsername(),
+                imageFile, member);
+        return "post/postList";  // 게시물 리스트로 리다이렉트
     }
 
 

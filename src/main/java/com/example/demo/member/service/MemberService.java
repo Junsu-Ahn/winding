@@ -230,5 +230,9 @@ public class MemberService {
         memberRepository.save(member);
         return true; // 비밀번호 변경 성공
     }
+
+    public Optional<Member> findById(Long memberId) {
+        return memberRepository.findById(memberId);
+    }
     //여기까지
 }

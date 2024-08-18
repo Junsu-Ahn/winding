@@ -1,5 +1,7 @@
 package com.example.demo.post.service;
 
+import com.example.demo.member.entity.Member;
+import com.example.demo.member.service.MemberService;
 import com.example.demo.post.entity.Post;
 import com.example.demo.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,17 +26,20 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
+    private final MemberService memberService;
 
     public void createPost(String title, String description, String departure, double departureLat,
                            double departureLng, String destination, double destinationLat,
                            double destinationLng, List<String> waypoints, List<Double> waypointLats,
-                           List<Double> waypointLngs, String author, MultipartFile imageFile) throws IOException {
+                           List<Double> waypointLngs, String author, MultipartFile imageFile,
+                           Member member) throws IOException {
 
         Post post = new Post();
         post.setTitle(title);
@@ -46,6 +54,7 @@ public class PostService {
         post.setWaypointLats(waypointLats);
         post.setWaypointLngs(waypointLngs);
         post.setAuthor(author);
+        post.setMember(member);
 
         // 이미지 파일 처리
         if (!imageFile.isEmpty()) {

@@ -21,6 +21,7 @@ public class Post extends BaseEntity {
 
     private String title;
     private String description;
+
     private String departure;
     private double departureLat;
     private double departureLng;
