@@ -1,6 +1,7 @@
 package com.example.demo.global.security;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
@@ -21,4 +22,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());
     }
+
+
 }

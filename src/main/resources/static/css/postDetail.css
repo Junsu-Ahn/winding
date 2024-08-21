@@ -1,4 +1,10 @@
-/* Container 스타일링 */
+body {
+    font-family: 'Lato', sans-serif;
+    background-color: #f7fafc;
+    margin: 0;
+    padding: 0;
+}
+
 .container {
     max-width: 800px;
     margin: 0 auto;
@@ -6,82 +12,49 @@
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
-/* 입력 그룹 스타일링 */
-.input-group {
-    margin-bottom: 20px;
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2d3748;
+    margin-bottom: 16px;
 }
 
-/* 입력 필드 스타일링 */
-.input-group input,
-.input-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    font-family: 'Roboto', sans-serif;
-    font-size: 16px;
+.icon {
+    color: #4299e1;
+    margin-right: 8px;
 }
 
-/* Flex와 Grid 레이아웃 스타일링 */
-.flex {
-    display: flex;
+.info {
+    margin-bottom: 16px;
+    color: #718096;
 }
 
-.space-x-2 > * + * {
-    margin-left: 10px;
+.info .date,
+.info .views,
+.info .author {
+    display: block;
+    margin-bottom: 8px;
 }
 
-.grid {
-    display: grid;
+.content h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #2d3748;
 }
 
-.grid-2-cols {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+.content p {
+    color: #2d3748;
 }
 
-/* Map 및 이미지 업로드 플레이스홀더 스타일링 */
-.map-placeholder,
-.image-upload-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-    background-color: #f9fafb;
-    color: #a0aec0;
-    height: 200px;
-    text-align: center;
-}
-
-/* Add 버튼 컨테이너와 버튼 스타일링 */
-.add-button-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.add-button {
-    background-color: #3182ce;
-    color: white;
-    padding: 10px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.add-button:hover {
-    background-color: #2b6cb0;
-}
-
-/* 추가적인 필드들에 대한 스타일 */
-#postTitle,
-#postDate,
-#postViews,
-#postAuthor,
-#postContent {
-    font-size: 16px;
+.map {
+    width: 400px;
+    height: 300px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
 }

@@ -36,6 +36,9 @@ public class PostController {
     private final PostService postService;
     private final MemberService memberService;
 
+    @Value("${custom.naver.api.client.id}")
+    private String naverClientId;
+
     @GetMapping("/create")
     public String showCreateForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         if (userDetails == null) {
@@ -58,11 +61,11 @@ public class PostController {
     public String createPost(@RequestParam("title") String title,
                              @RequestParam("description") String description,
                              @RequestParam("departure") String departure,
-                             @RequestParam("departureLat") double departureLat,
-                             @RequestParam("departureLng") double departureLng,
+                             @RequestParam(value = "departureLat", required = false) Double departureLat,
+                             @RequestParam(value = "departureLng", required = false) Double departureLng,
                              @RequestParam("destination") String destination,
-                             @RequestParam("destinationLat") double destinationLat,
-                             @RequestParam("destinationLng") double destinationLng,
+                             @RequestParam(value = "destinationLat", required = false) Double destinationLat,
+                             @RequestParam(value = "destinationLng", required = false) Double destinationLng,
                              @RequestParam(value = "waypoints", required = false) List<String> waypoints,
                              @RequestParam(value = "waypointLats", required = false) List<Double> waypointLats,
                              @RequestParam(value = "waypointLngs", required = false) List<Double> waypointLngs,
@@ -95,11 +98,11 @@ public class PostController {
         List<Post> posts = this.postService.getAllPosts();
 
         model.addAttribute("posts", posts);
-
         return "post/postList";
     }
 
 
+    // 게시글 상세 보기
     // 게시글 상세 보기
     @GetMapping("/detail/{id}")
     public String getPostById(@PathVariable("id") Long id, Model model) {
@@ -108,14 +111,31 @@ public class PostController {
         if (post == null) {
             return "redirect:/posts/list"; // 포스트가 없는 경우 목록으로 리다이렉트
         }
+
+        // 게시물 작성 날짜를 포맷팅
         String formattedCreateDate = post.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         model.addAttribute("post", post);
         model.addAttribute("formattedCreateDate", formattedCreateDate);
 
+        // Naver Client ID 추가
+        model.addAttribute("naverClientId", naverClientId);
+
+        // 수정 날짜가 있는 경우 포맷팅하여 모델에 추가
         if (post.getModifyDate() != null) {
             model.addAttribute("formattedModifyDate", post.getModifyDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         }
+
         return "post/postDetail";
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Post> getPostData(@PathVariable("id") Long id) {
+        Post post = postService.getPostById(id);
+        if (post != null) {
+            return ResponseEntity.ok(post);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

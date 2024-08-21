@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -104,5 +105,13 @@ public class MapController {
             System.err.println("Error parsing the geocode response: " + e.getMessage());
             throw new RuntimeException("Failed to parse the geocode response.", e);
         }
+    }
+
+    @GetMapping("/naver")
+    public Map<String, String> getNaverCredentials() {
+        Map<String, String> credentials = new HashMap<>();
+        credentials.put("clientId", clientId);
+        credentials.put("clientSecret", clientSecret);
+        return credentials;
     }
 }
