@@ -27,6 +27,10 @@
     </div>
 </div>
 
+<div class="admin_section">
+    <a href="/admin" class="admin_link" sec:authorize="hasRole('ROLE_ADMIN')">관리자 페이지로 이동</a>
+</div>
+
 <div class="drive_section popular_drives">
     <h2>인기 드라이브 코스</h2>
     <ul class="drive_list">

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 페이지</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/adminPage.css">
+</head>
+<script type="text/javascript">
+  function checkEmptyResult() {
+    var isEmptyResult = /*[[${isEmptyResult}]]*/ false;
+    if (isEmptyResult) {
+      alert("검색결과 없음");
+    }
+  }
+</script>
+<body onload="checkEmptyResult()">
+<!-- 관리자 페이지 상단바 -->
+<div class="admin_topbar">
+  <h1>관리자 페이지</h1>
+  <a href="/" class="home_link">홈으로 돌아가기</a>
+</div>
+
+<!-- 검색 결과 없음 메시지 -->
+<div th:if="${message}">
+  <p style="color: red; text-align: center;" th:text="${message}">검색결과 없음</p>
+</div>
+
+<!-- 검색 섹션 -->
+<div class="search_section">
+  <h2>검색</h2>
+  <form action="/admin/search" method="get">
+    <input type="text" name="query" placeholder="사용자명 또는 게시글 제목을 입력하세요">
+    <button type="submit">검색</button>
+  </form>
+</div>
+
+<!-- 멤버 조회 섹션 -->
+<div class="member_section">
+  <h2>전체 멤버 조회</h2>
+  <form action="/admin/members/delete" method="post">
+    <ul class="member_list">
+      <li th:each="member : ${members}">
+        <input type="checkbox" name="memberIds" th:value="${member.id}">
+        <p>아이디: <span th:text="${member.username}">아이디</span></p>
+        <p>이메일: <span th:text="${member.email}">이메일</span></p>
+        <p>역할: <span th:text="${member.role}">역할</span></p>
+      </li>
+    </ul>
+    <button type="submit">선택한 회원 삭제</button>
+  </form>
+</div>
+
+<!-- 멤버 페이지네이션 -->
+<div class="pagination">
+  <a th:href="@{/admin/search(query=${query}, page=${memberPage.number - 1}, size=${memberPage.size})}"
+     th:if="${memberPage.hasPrevious()}">&laquo; 이전</a>
+  <span th:text="${memberPage.number + 1}">1</span> / <span th:text="${memberPage.totalPages}">1</span>
+  <a th:href="@{/admin/search(query=${query}, page=${memberPage.number + 1}, size=${memberPage.size})}"
+     th:if="${memberPage.hasNext()}">다음 &raquo;</a>
+</div>
+
+<!-- 게시글 조회 섹션 -->
+<div class="post_section">
+  <h2>전체 게시글 조회</h2>
+  <form action="/admin/posts/delete" method="post">
+    <ul class="post_list">
+      <li th:each="post : ${posts}">
+        <input type="checkbox" name="postIds" th:value="${post.id}">
+        <h3 th:text="${post.title}">게시글 제목</h3>
+        <p th:text="${post.description}">게시글 내용</p>
+        <p>작성자: <span th:text="${post.member.username}">작성자</span></p>
+      </li>
+    </ul>
+    <button type="submit">선택한 게시글 삭제</button>
+  </form>
+</div>
+
+<!-- 게시글 페이지네이션 -->
+<div class="pagination">
+  <a th:href="@{/admin/search(query=${query}, page=${postPage.number - 1}, size=${postPage.size})}"
+     th:if="${postPage.hasPrevious()}">&laquo; 이전</a>
+  <span th:text="${postPage.number + 1}">1</span> / <span th:text="${postPage.totalPages}">1</span>
+  <a th:href="@{/admin/search(query=${query}, page=${postPage.number + 1}, size=${postPage.size})}"
+     th:if="${postPage.hasNext()}">다음 &raquo;</a>
+</div>
+
+</body>
+</html>

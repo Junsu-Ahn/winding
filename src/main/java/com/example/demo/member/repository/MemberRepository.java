@@ -1,6 +1,8 @@
 package com.example.demo.member.repository;
 
 import com.example.demo.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +22,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAll();
 
     Optional<Member> findByNickname(String nickname);
+
+    List<Member> findByUsernameContaining(String username);
+    Page<Member> findByUsernameContaining(String username, Pageable pageable);
 }

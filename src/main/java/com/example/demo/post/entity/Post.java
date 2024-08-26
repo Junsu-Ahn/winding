@@ -12,7 +12,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-
 public class Post extends BaseEntity {
 
     @ManyToOne
@@ -55,5 +54,13 @@ public class Post extends BaseEntity {
         this.waypoints.add(waypoint);
         this.waypointLats.add(lat);
         this.waypointLngs.add(lng);
+    }
+
+    public int getViewCount() {
+        return views;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.views = viewCount;
     }
 }

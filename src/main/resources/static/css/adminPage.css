@@ -1,0 +1,167 @@
+/* 기본적인 스타일 초기화 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Lato', sans-serif;
+}
+
+/* 관리자 페이지 상단바 스타일 */
+.admin_topbar {
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.admin_topbar h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.admin_topbar .home_link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.admin_topbar .home_link:hover {
+  text-decoration: underline;
+}
+
+/* 검색 섹션 스타일 */
+.search_section {
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-bottom: 1px solid #ccc;
+}
+
+.search_section h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.search_section form {
+  display: flex;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search_section input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.search_section button {
+  padding: 10px 20px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.search_section button:hover {
+  background-color: #555;
+}
+
+/* 멤버 조회 섹션 스타일 */
+.member_section, .post_section {
+  padding: 20px;
+}
+
+.member_section h2, .post_section h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+.member_list, .post_list {
+  list-style-type: none;
+}
+
+.member_list li, .post_list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.member_list li p, .post_list li p {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.post_list li h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+/* 삭제 버튼 스타일 */
+form button[type="submit"] {
+  padding: 10px 20px;
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+  display: block;
+  width: 100%;
+}
+
+form button[type="submit"]:hover {
+  background-color: #c0392b;
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination a, .pagination span {
+  margin: 0 5px;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+}
+
+.pagination a {
+  background-color: #f4f4f4;
+}
+
+.pagination a:hover {
+  background-color: #ddd;
+}
+
+.pagination span {
+  background-color: #333;
+  color: #fff;
+  font-weight: bold;
+}
+
+.pagination a[disabled], .pagination a[disabled]:hover {
+  background-color: #eaeaea;
+  color: #999;
+  pointer-events: none;
+  cursor: default;
+}

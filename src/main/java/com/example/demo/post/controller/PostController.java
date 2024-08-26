@@ -103,9 +103,13 @@ public class PostController {
 
 
     // 게시글 상세 보기
-    // 게시글 상세 보기
     @GetMapping("/detail/{id}")
-    public String getPostById(@PathVariable("id") Long id, Model model) {
+    public String getPostById(@AuthenticationPrincipal UserDetails userDetails, @PathVariable("id") Long id, Model model) {
+
+        if (userDetails == null) {
+            return "redirect:/member/login"; // 로그인 페이지로 리다이렉트
+        }
+
         Post post = postService.getPostById(id);
 
         if (post == null) {
@@ -116,6 +120,8 @@ public class PostController {
         String formattedCreateDate = post.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         model.addAttribute("post", post);
         model.addAttribute("formattedCreateDate", formattedCreateDate);
+
+        postService.incrementViewCount(id);
 
         // Naver Client ID 추가
         model.addAttribute("naverClientId", naverClientId);

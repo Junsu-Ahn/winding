@@ -134,12 +134,22 @@ public class PostService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "KakaoAK " + kakaoApiKey);
-        System.out.print(kakaoApiKey);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
         return response.getBody();
+    }
+
+    public void incrementViewCount(Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // 조회수 증가
+        post.setViewCount(post.getViewCount() + 1);
+
+        // 변경 사항 저장
+        postRepository.save(post);
     }
 }

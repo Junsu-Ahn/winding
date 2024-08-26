@@ -71,18 +71,21 @@ public class MemberService {
     }
 
     @Transactional
-    public Member createAdmin(String username, String password) {
-        if (memberRepository.existsByUsername(username)) {
-            throw new DataIntegrityViolationException("이미 존재하는 아이디입니다.");
+    public void createAdmin() {
+        // 관리자 계정이 있는지 확인
+        if (memberRepository.findByUsername("admin").isEmpty()) {
+            // 관리자 계정 생성
+            Member admin = Member.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("admin")) // 비밀번호 암호화
+                    .nickname("Admin")
+                    .email("admin@example.com")
+                    .address("Admin Address")
+                    .role(Role.ROLE_ADMIN) // 관리자 권한 부여
+                    .build();
+
+            memberRepository.save(admin);
         }
-
-        Member admin = Member.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .role(Role.ROLE_ADMIN)
-                .build();
-
-        return memberRepository.save(admin);
     }
 
     @Transactional
