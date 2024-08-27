@@ -3,7 +3,6 @@ package com.example.demo.map.controller;
 import com.example.demo.map.DTO.Location;
 import com.example.demo.map.DTO.RouteRequest;
 import com.example.demo.map.service.MapService;
-import com.example.demo.post.service.PostService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -12,14 +11,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,13 +33,12 @@ public class MapController {
     private final MapService mapService;
     private final RestTemplate restTemplate = new RestTemplate();
 
+    // 기존 경로 계산 메서드
     @PostMapping("/route")
     public ResponseEntity<String> calculateRoute(@RequestBody RouteRequest request) {
-        // 1. 출발지와 목적지 좌표 가져오기
         String departureCoords = request.getDeparture().getLat() + "," + request.getDeparture().getLng();
         String destinationCoords = request.getDestination().getLat() + "," + request.getDestination().getLng();
 
-        // 2. 경유지 처리
         String waypoints = null;
         if (request.getWaypoints() != null && !request.getWaypoints().isEmpty()) {
             StringBuilder waypointsBuilder = new StringBuilder();
@@ -53,14 +48,51 @@ public class MapController {
             waypoints = waypointsBuilder.toString();
         }
 
-
-        // 3. 경로 계산 서비스 호출
         String routeData = mapService.getRoute(departureCoords, destinationCoords, waypoints);
-
-        // 4. 경로 데이터를 클라이언트로 반환
         return ResponseEntity.ok(routeData);
     }
 
+    // 네이버 API로부터 경로 데이터를 프록시하는 메서드
+    @GetMapping("/naver-route")
+    public ResponseEntity<String> getNaverRoute(
+            @RequestParam("start") String start,
+            @RequestParam("goal") String goal,
+            @RequestParam(name = "waypoints", required = false) String waypoints,
+            @RequestParam(name = "option", required = false, defaultValue = "trafast") String option) {
+
+        // URI 빌더를 사용하여 API 요청 URI 구성
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving")
+                .queryParam("start", start)
+                .queryParam("goal", goal)
+                .queryParam("option", option);
+
+        if (waypoints != null && !waypoints.isEmpty()) {
+            uriBuilder.queryParam("waypoints", waypoints);
+        }
+
+        URI uri = uriBuilder.build().encode().toUri();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-NCP-APIGW-API-KEY-ID", clientId);
+        headers.set("X-NCP-APIGW-API-KEY", clientSecret);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            // API 요청 전송 및 응답 처리
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
+            System.out.println("Response Status Code: " + response.getStatusCode());
+            System.out.println("Response Body: " + response.getBody());
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            // 예외 발생 시 로그 출력 및 500 상태 반환
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("API 요청 중 오류가 발생했습니다.");
+        }
+    }
+
+
+    // 기존의 지오코딩 메서드
     @GetMapping("/geocode")
     @ResponseBody
     public String getGeocode(@RequestParam("address") String address) {
@@ -85,9 +117,6 @@ public class MapController {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(responseBody);
 
-            // 응답 로그 추가
-            System.out.println("Geocode API response: " + responseBody);
-
             JsonNode addressesNode = root.path("addresses");
             if (addressesNode.isArray() && addressesNode.size() > 0) {
                 JsonNode firstAddress = addressesNode.get(0);
@@ -96,17 +125,14 @@ public class MapController {
 
                 return longitude + "," + latitude;
             } else {
-                // 유효한 주소가 없는 경우 처리
-                System.err.println("No valid addresses found.");
                 throw new RuntimeException("No valid addresses found in the response.");
             }
         } catch (Exception e) {
-            // 파싱 오류나 기타 예외 처리
-            System.err.println("Error parsing the geocode response: " + e.getMessage());
             throw new RuntimeException("Failed to parse the geocode response.", e);
         }
     }
 
+    // 네이버 API 키를 프론트엔드에 제공하는 메서드
     @GetMapping("/naver")
     public Map<String, String> getNaverCredentials() {
         Map<String, String> credentials = new HashMap<>();
