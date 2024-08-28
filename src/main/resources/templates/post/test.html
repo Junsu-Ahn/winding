@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>네이버 지도 경로 표시</title>
+  <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=aun2dmrzp7"></script>
+</head>
+<body>
+<div id="map" style="width:100%;height:400px;"></div>
+<script>
+  var map = new naver.maps.Map('map', {
+      center: new naver.maps.LatLng(37.5665, 126.9780),
+      zoom: 7
+  });
+
+  var start = new naver.maps.LatLng(37.5665, 126.9780);
+  var end = new naver.maps.LatLng(36.3504, 127.3845);
+
+  naver.maps.Service.route({
+      start: start,
+      goal: end,
+      option: 'trafast'
+  }, function(status, response) {
+      if (status !== naver.maps.Service.Status.OK) {
+          return alert('경로를 찾을 수 없습니다.');
+      }
+
+      var route = response.route.traoptimal[0].path;
+      var path = route.map(function(coord) {
+          return new naver.maps.LatLng(coord[1], coord[0]);
+      });
+
+      var polyline = new naver.maps.Polyline({
+          map: map,
+          path: path,
+          strokeColor: '#5347AA',
+          strokeOpacity: 0.8,
+          strokeWeight: 6
+      });
+
+      map.fitBounds(new naver.maps.LatLngBounds(path[0], path[path.length - 1]));
+  });
+</script>
+</body>
+</html>
