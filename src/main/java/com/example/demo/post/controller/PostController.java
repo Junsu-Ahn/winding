@@ -80,7 +80,7 @@ public class PostController {
         postService.createPost(title, description, departure, departureLat, departureLng, destination,
                 destinationLat, destinationLng, waypoints, waypointLats, waypointLngs, userDetails.getUsername(),
                 imageFile, member);
-        return "post/postList";  // 게시물 리스트로 리다이렉트
+        return "redirect:/posts/list";  // 게시물 리스트로 리다이렉트
     }
 
 
