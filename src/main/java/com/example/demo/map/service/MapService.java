@@ -1,6 +1,8 @@
 package com.example.demo.map.service;
 
 import com.example.demo.map.DTO.Location;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -9,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.util.List;
@@ -69,7 +69,6 @@ public class MapService {
             throw new RuntimeException("Failed to parse the geocode response.", e);
         }
     }
-
     /**
      * 출발지, 목적지, 그리고 경유지를 받아서 Naver Directions API를 통해 경로를 계산하는 메서드
      * @param originLat 출발지 위도
@@ -113,5 +112,27 @@ public class MapService {
         ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
 
         return response.getBody();  // JSON 형식의 경로 데이터 반환
+    }
+
+    public ResponseEntity<String> getRouteFromNaver(String start, String goal, String waypoints, String option) {
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving")
+                .queryParam("start", start)
+                .queryParam("goal", goal)
+                .queryParam("option", option);
+
+        // waypoints가 null이거나 비어있지 않은 경우에만 추가
+        if (waypoints != null && !waypoints.isEmpty()) {
+            uriBuilder.queryParam("waypoints", waypoints);
+        }
+
+        URI uri = uriBuilder.build().encode().toUri();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-NCP-APIGW-API-KEY-ID", clientId);
+        headers.set("X-NCP-APIGW-API-KEY", clientSecret);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        return restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
     }
 }

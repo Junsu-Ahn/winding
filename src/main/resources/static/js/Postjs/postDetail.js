@@ -1,82 +1,75 @@
-// 경로 데이터를 가져오는 함수
-async function getRoute(startLocation, goalLocation, waypoints) {
-    const payload = {
-        startLocation: startLocation,
-        goalLocation: goalLocation,
-        waypoints: waypoints
-    };
-
-    try {
-        const response = await fetch('/api/calculate-route', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Received route data:', data);
-            return data;
-        } else {
-            console.error('Failed to fetch route data:', response.status, response.statusText);
-            return null;
-        }
-    } catch (error) {
-        console.error('Error fetching route data:', error);
-        return null;
-    }
-}
-
-// DOM이 준비되었을 때 실행되는 코드
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', function() {
     var mapElement = document.getElementById('map');
+
+    // 출발지, 도착지, 경유지의 좌표를 가져옵니다.
     var departureLat = parseFloat(mapElement.getAttribute('data-departure-lat'));
     var departureLng = parseFloat(mapElement.getAttribute('data-departure-lng'));
     var destinationLat = parseFloat(mapElement.getAttribute('data-destination-lat'));
     var destinationLng = parseFloat(mapElement.getAttribute('data-destination-lng'));
 
-    var waypoints = mapElement.getAttribute('data-waypoints') ? mapElement.getAttribute('data-waypoints').split('|') : [];
-    var waypointLats = mapElement.getAttribute('data-waypoint-lats') ? mapElement.getAttribute('data-waypoint-lats').split('|').map(parseFloat) : [];
-    var waypointLngs = mapElement.getAttribute('data-waypoint-lngs') ? mapElement.getAttribute('data-waypoint-lngs').split('|').map(parseFloat) : [];
+    if (isNaN(departureLat) || isNaN(departureLng) || isNaN(destinationLat) || isNaN(destinationLng)) {
+        console.error('출발지 또는 도착지 좌표가 유효하지 않습니다.');
+        return;
+    }
 
-    if (!isNaN(departureLat) && !isNaN(departureLng) && !isNaN(destinationLat) && !isNaN(destinationLng)) {
-        var map = new naver.maps.Map('map', {
-            center: new naver.maps.LatLng(departureLat, departureLng), // 출발지 중심으로 설정
-            zoom: 10
-        });
+    // 네이버 지도 초기화
+    var map = new naver.maps.Map('map', {
+        center: new naver.maps.LatLng(departureLat, departureLng),
+        zoom: 10
+    });
 
-        try {
-            const startLocation = { lat: departureLat, lng: departureLng };
-            const goalLocation = { lat: destinationLat, lng: destinationLng };
+    var start = departureLng + ',' + departureLat;
+    var goal = destinationLng + ',' + destinationLat;
 
-            const waypointLocations = waypoints.map((waypoint, index) => ({
-                lat: waypointLats[index],
-                lng: waypointLngs[index]
-            }));
+    // 서버로 요청을 보내기 위한 URL 생성
+    var serverUrl = '/api/naver-route?start=' + start + '&goal=' + goal + '&option=trafast';
 
-            const routeData = await getRoute(startLocation, goalLocation, waypointLocations);
+    console.log('API 요청 URL:', serverUrl); // 디버그를 위해 URL 출력
 
-            if (routeData && routeData.route && routeData.route.trafast && routeData.route.trafast.length > 0) {
-                const routePath = routeData.route.trafast[0].path.map(coord => new naver.maps.LatLng(coord[1], coord[0]));
+    // 서버를 통해 네이버 Directions API 경로 데이터를 요청
+    fetch(serverUrl)
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('HTTP error! status: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            console.log('API 응답 데이터:', data);
 
-                new naver.maps.Polyline({
-                    path: routePath,
-                    strokeColor: '#5347AA',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 6,
-                    map: map
+            if (data.code !== 0) {
+                console.error('경로 요청 실패:', data.message);
+                return;
+            }
+
+            var route = null;
+
+            // trafast 경로가 있는지 확인
+            if (data.route.trafast && data.route.trafast.length > 0) {
+                route = data.route.trafast[0];
+            }
+
+            if (route) {
+                var path = route.path;
+                var polylinePath = path.map(function(coord) {
+                    return new naver.maps.LatLng(coord[1], coord[0]);
                 });
 
-                map.setCenter(routePath[0]);
+                // 경로를 지도에 표시
+                var polyline = new naver.maps.Polyline({
+                    path: polylinePath,
+                    strokeColor: '#FF0000', // 선 색상
+                    strokeOpacity: 0.8, // 선 투명도
+                    strokeWeight: 6,   // 선 두께
+                    map: map           // 지도를 오버레이할 대상
+                });
+
+                console.log('경로 좌표 배열:', polylinePath); // 경로 좌표 배열 출력
             } else {
-                console.error('경로 데이터를 찾을 수 없습니다.');
+                console.error('유효한 경로 데이터를 찾을 수 없습니다.');
             }
-        } catch (error) {
-            console.error('경로 데이터를 가져오는 중 오류가 발생했습니다:', error);
-        }
-    } else {
-        console.error('유효하지 않은 주소입니다.');
-    }
+        })
+        .catch(function(error) {
+            console.error('API 요청 오류:', error);
+        });
 });

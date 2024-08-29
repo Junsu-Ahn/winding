@@ -31,14 +31,15 @@
 
     <!-- 지도 영역 -->
     <div id="map" class="map"
-         th:data-departure-lat="${post.departureLat}"
-         th:data-departure-lng="${post.departureLng}"
-         th:data-destination-lat="${post.destinationLat}"
-         th:data-destination-lng="${post.destinationLng}"
+         th:data-departure-lat="${post.departureLat != null ? post.departureLat : 0}"
+         th:data-departure-lng="${post.departureLng != null ? post.departureLng : 0}"
+         th:data-destination-lat="${post.destinationLat != null ? post.destinationLat : 0}"
+         th:data-destination-lng="${post.destinationLng != null ? post.destinationLng : 0}"
          th:data-waypoints="${post.waypoints != null ? post.waypoints : ''}"
          th:data-waypoint-lats="${post.waypointLats != null ? post.waypointLats : ''}"
          th:data-waypoint-lngs="${post.waypointLngs != null ? post.waypointLngs : ''}">
     </div>
+
 </div>
 
 </body>
