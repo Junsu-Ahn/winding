@@ -16,7 +16,7 @@ public class Post extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
-    private Member member; // Member와의 관계 추가
+    private Member member;
 
     private String title;
     private String description;
@@ -29,31 +29,64 @@ public class Post extends BaseEntity {
     private double destinationLat;
     private double destinationLng;
 
-    private String author; // 작성자
-    private int views = 0; // 조회수 초기값은 0
+    private String author;
+    private int views = 0;
 
-    @Lob
-    private byte[] image;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<PostImage> images = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(name = "waypoints", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "waypoint")
-    private List<String> waypoints = new ArrayList<>();
+    // 이미지 추가 메서드
+    public void addImage(PostImage image) {
+        images.add(image);
+        image.setPost(this);
+    }
 
-    @ElementCollection
-    @CollectionTable(name = "waypoint_lats", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "waypoint_lat")
-    private List<Double> waypointLats = new ArrayList<>();
+    // 이미지 초기화 메서드
+    public void clearImages() {
+        images.clear();
+    }
 
-    @ElementCollection
-    @CollectionTable(name = "waypoint_lngs", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "waypoint_lng")
-    private List<Double> waypointLngs = new ArrayList<>();
+    // 개별 경유지 필드
+    private String waypoint1;
+    private Double waypoint1Lat;
+    private Double waypoint1Lng;
 
-    public void addWaypoint(String waypoint, double lat, double lng) {
-        this.waypoints.add(waypoint);
-        this.waypointLats.add(lat);
-        this.waypointLngs.add(lng);
+    private String waypoint2;
+    private Double waypoint2Lat;
+    private Double waypoint2Lng;
+
+    private String waypoint3;
+    private Double waypoint3Lat;
+    private Double waypoint3Lng;
+
+    public void setWaypoint(int index, String waypoint, Double lat, Double lng) {
+        if (index == 1) {
+            this.waypoint1 = waypoint;
+            this.waypoint1Lat = lat;
+            this.waypoint1Lng = lng;
+        } else if (index == 2) {
+            this.waypoint2 = waypoint;
+            this.waypoint2Lat = lat;
+            this.waypoint2Lng = lng;
+        } else if (index == 3) {
+            this.waypoint3 = waypoint;
+            this.waypoint3Lat = lat;
+            this.waypoint3Lng = lng;
+        }
+    }
+
+    public void clearWaypoints() {
+        this.waypoint1 = null;
+        this.waypoint1Lat = null;
+        this.waypoint1Lng = null;
+
+        this.waypoint2 = null;
+        this.waypoint2Lat = null;
+        this.waypoint2Lng = null;
+
+        this.waypoint3 = null;
+        this.waypoint3Lat = null;
+        this.waypoint3Lng = null;
     }
 
     public int getViewCount() {
@@ -64,3 +97,4 @@ public class Post extends BaseEntity {
         this.views = viewCount;
     }
 }
+

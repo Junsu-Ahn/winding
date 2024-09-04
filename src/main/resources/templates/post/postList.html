@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post List</title>
+    <title>게시글 목록</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -20,13 +20,13 @@
 
 <!-- 게시물 리스트 -->
 <div class="post_list_section">
-    <h2>게시글 목록</h2>
+    <h2 th:text="${keyword != null && keyword != '' ? '검색 결과: ' + keyword : '게시글 목록'}"></h2>
+
     <div class="post_grid">
         <!-- 각 게시물 카드 -->
         <div class="post_card" th:each="post : ${posts}">
             <a th:href="@{/posts/detail/{id}(id=${post.id})}">
                 <!-- 썸네일 이미지 -->
-<!--                <img th:src="@{${post.thumbnail != null ? post.thumbnail : 'https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2'}}" alt="썸네일 이미지">-->
                 <div class="post_info">
                     <h3 th:text="${post.title}">게시글 제목</h3>
                     <p>조회수: <span th:text="${post.views}">0</span></p>
@@ -35,6 +35,10 @@
         </div>
     </div>
 
+    <!-- 게시물이 없을 때 메시지 표시 -->
+    <div th:if="${#lists.isEmpty(posts)}">
+        <p>게시물이 없습니다.</p>
+    </div>
 </div>
 
 </body>

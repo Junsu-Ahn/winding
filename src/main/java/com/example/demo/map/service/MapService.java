@@ -13,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @Service
 public class MapService {
@@ -69,52 +68,10 @@ public class MapService {
             throw new RuntimeException("Failed to parse the geocode response.", e);
         }
     }
-    /**
-     * 출발지, 목적지, 그리고 경유지를 받아서 Naver Directions API를 통해 경로를 계산하는 메서드
-     * @param originLat 출발지 위도
-     * @param originLng 출발지 경도
-     * @param destinationLat 목적지 위도
-     * @param destinationLng 목적지 경도
-     * @param waypointLats 경유지 위도 리스트
-     * @param waypointLngs 경유지 경도 리스트
-     * @return 경로 데이터 (JSON 형식)
-     */
-    public String getRoute(double originLat, double originLng, double destinationLat, double destinationLng, List<Double> waypointLats, List<Double> waypointLngs) {
-        String origin = originLng + "," + originLat;
-        String destination = destinationLng + "," + destinationLat;
-
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("https://naveropenapi.apigw.ntruss.com")
-                .path("/map-direction/v1/driving")
-                .queryParam("start", origin)
-                .queryParam("goal", destination)
-                .queryParam("option", "trafast");  // 최적 경로 옵션
-
-        // 경유지 추가
-        if (waypointLats != null && !waypointLats.isEmpty() && waypointLngs != null && !waypointLngs.isEmpty()) {
-            StringBuilder waypointsBuilder = new StringBuilder();
-            for (int i = 0; i < waypointLats.size(); i++) {
-                if (i > 0) {
-                    waypointsBuilder.append("|");
-                }
-                waypointsBuilder.append(waypointLngs.get(i)).append(",").append(waypointLats.get(i));
-            }
-            uriBuilder.queryParam("waypoints", waypointsBuilder.toString());
-        }
-
-        URI uri = uriBuilder.build().encode().toUri();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-NCP-APIGW-API-KEY-ID", clientId);
-        headers.set("X-NCP-APIGW-API-KEY", clientSecret);
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
-
-        return response.getBody();  // JSON 형식의 경로 데이터 반환
-    }
 
     public ResponseEntity<String> getRouteFromNaver(String start, String goal, String waypoints, String option) {
+
+        // UriComponentsBuilder를 사용해 경로 url생성
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl("https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving")
                 .queryParam("start", start)
                 .queryParam("goal", goal)
@@ -124,15 +81,19 @@ public class MapService {
         if (waypoints != null && !waypoints.isEmpty()) {
             uriBuilder.queryParam("waypoints", waypoints);
         }
-
+        // 네이버 API에 HTTP 요청을 보낼 uri객체 생성
         URI uri = uriBuilder.build().encode().toUri();
 
+        // HTTP 요청의 헤더 객체 생성
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-NCP-APIGW-API-KEY-ID", clientId);
         headers.set("X-NCP-APIGW-API-KEY", clientSecret);
 
+        // entity 객체는 나중에 restTemplate을 통해 실제 HTTP 요청을 보낼 때 사용
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
+
+        // 네이버 API 서버로 GET 요청을 보내고, 그에 대한 응답을 ResponseEntity<String> 형태로 반환
         return restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
     }
 }

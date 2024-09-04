@@ -17,11 +17,14 @@
         }
         .map-container {
             position: relative;
-            width: 600px;
-            height: 800px;
-            background-image: url('https://github.com/user-attachments/assets/cc38c20e-18b4-4283-9162-d5ffc52ba8af');
-            background-size: cover;
-            background-repeat: no-repeat;
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+        }
+        .map-container img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
         .map-button {
             position: absolute;
@@ -36,38 +39,39 @@
             height: 30px;
         }
         #button1 {
-            top: 20%;
-            left: 60%;
-        }
-        #button2 {
-            top: 20%;
-            left: 40%;
-        }
-        #button3 {
-            top: 40%;
-            left: 40%;
-        }
-        #button4 {
-            top: 35%;
-            left: 55%;
-        }
-        #button5 {
-            top: 50%;
-            left: 45%;
-        }
-        #button6 {
-            top: 60%;
-            left: 40%;
-        }
-        #button7 {
-            top: 55%;
-            left: 65%;
-        }
-        #button8 {
-            top: 40%;
-            left: 70%;
-        }
-         .guide-text {
+    top: 18%;
+    left: calc(60% - 60px);
+}
+#button2 {
+    top: 18%;
+    left: calc(40% - 60px);
+}
+#button3 {
+    top: 36%;
+    left: calc(40% - 60px);
+}
+#button4 {
+    top: 33%;
+    left: calc(55% - 60px);
+}
+#button5 {
+    top: 48%;
+    left: calc(45% - 60px);
+}
+#button6 {
+    top: 60%;
+    left: calc(40% - 60px);
+}
+#button7 {
+    top: 58%;
+    left: calc(65% - 60px);
+}
+#button8 {
+    top: 40%;
+    left: calc(70% - 60px);
+}
+
+        .guide-text {
             position: absolute;
             top: 10px;
             left: 50%;
@@ -82,6 +86,7 @@
 </head>
 <body>
 <div class="map-container">
+    <img src="https://github.com/user-attachments/assets/cc38c20e-18b4-4283-9162-d5ffc52ba8af" alt="South Korea Map">
     <div class="guide-text">지역을 선택해 주세요</div>
     <button id="button1" class="map-button">강원도</button>
     <button id="button2" class="map-button">경기도</button>

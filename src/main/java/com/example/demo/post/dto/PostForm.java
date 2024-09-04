@@ -2,7 +2,6 @@ package com.example.demo.post.dto;
 
 import com.example.demo.global.base.BaseEntity;
 import jakarta.persistence.Entity;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,4 +19,5 @@ public class PostForm extends BaseEntity {
     private String mapUrl;
     private String author;
     private String imageUrl;  // 이미지 URL
+
 }

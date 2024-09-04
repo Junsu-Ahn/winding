@@ -46,15 +46,19 @@
             <input type="hidden" id="destinationLng" name="destinationLng">
             <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('destination')">주소 검색</button>
         </div>
+
+        <!-- 경유지 추가 버튼 -->
         <div id="waypoints-container">
             <label>경유지</label>
-            <!-- 경유지 필드가 추가될 곳 -->
         </div>
-        <button type="button" class="btn btn-secondary mt-2" onclick="addWaypoint()">경유지 추가</button>
-        <div class="form-group mt-3">
-            <label for="image">이미지 업로드</label>
-            <input type="file" class="form-control" id="image" name="image">
+        <button type="button" class="btn btn-secondary mt-2" id="add-waypoint-btn" onclick="addWaypoint()">+ 경유지 추가</button>
+
+        <!-- 이미지 업로드 및 설명 입력 -->
+        <div id="image-upload-container" class="mt-3">
+            <label>이미지 업로드</label>
         </div>
+        <button type="button" class="btn btn-secondary mt-2" id="add-image-btn" onclick="addImageUpload()">+ 이미지 추가</button>
+
         <!-- 확인 버튼 추가 -->
         <button type="submit" class="btn btn-primary mt-2">게시글 등록</button>
     </form>

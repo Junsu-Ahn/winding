@@ -7,6 +7,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var destinationLat = parseFloat(mapElement.getAttribute('data-destination-lat'));
     var destinationLng = parseFloat(mapElement.getAttribute('data-destination-lng'));
 
+     var waypoints;
+        try {
+            waypoints = JSON.parse(mapElement.getAttribute('data-waypoints'));
+        } catch (e) {
+            console.error('경유지 데이터를 파싱하는 중 오류가 발생했습니다:', e);
+            waypoints = [];
+        }
+
     if (isNaN(departureLat) || isNaN(departureLng) || isNaN(destinationLat) || isNaN(destinationLng)) {
         console.error('출발지 또는 도착지 좌표가 유효하지 않습니다.');
         return;
@@ -20,6 +28,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var start = departureLng + ',' + departureLat;
     var goal = destinationLng + ',' + destinationLat;
+
+      // 출발지 Marker 추가
+        var startMarker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(departureLat, departureLng),
+            map: map,
+            title: '출발지'
+        });
+
+        // 도착지 Marker 추가
+        var goalMarker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(destinationLat, destinationLng),
+            map: map,
+            title: '도착지'
+        });
 
     // 서버로 요청을 보내기 위한 URL 생성
     var serverUrl = '/api/naver-route?start=' + start + '&goal=' + goal + '&option=trafast';
