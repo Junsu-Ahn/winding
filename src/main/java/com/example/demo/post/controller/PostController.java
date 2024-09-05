@@ -63,18 +63,18 @@ public class PostController {
             @RequestParam(value = "waypoints", required = false) List<String> waypoints,
             @RequestParam(value = "waypointLats", required = false) List<Double> waypointLats,
             @RequestParam(value = "waypointLngs", required = false) List<Double> waypointLngs,
-            @RequestParam(value = "images", required = false) List<MultipartFile> imageFiles,  // 여기서 required=false로 설정
-            @RequestParam(value = "imageDescriptions", required = false) List<String> imageDescriptions,
+            @RequestParam("thumbnail") MultipartFile thumbnail,  // 썸네일 이미지
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "imageDescriptions", required = false) List<String> imageDescriptions,  // 이미지 설명
             @RequestParam("memberId") Long memberId,
             @AuthenticationPrincipal UserDetails userDetails,
             Model model) throws IOException {
 
-        Member member = memberService.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
-
-        postService.createPost(title, description, departure, departureLat, departureLng, destination,
-                destinationLat, destinationLng, waypoints, waypointLats, waypointLngs, userDetails.getUsername(),
-                imageFiles, imageDescriptions, member);
+        // 썸네일과 다른 이미지 처리 로직은 PostService에서 처리
+        postService.createPost(title, description, departure, departureLat, departureLng, destination, destinationLat,
+                destinationLng, waypoints, waypointLats, waypointLngs, userDetails.getUsername(),
+                thumbnail, images, imageDescriptions, memberService.findById(memberId)
+                        .orElseThrow(() -> new RuntimeException("Member not found")));
 
         return "redirect:/posts/list";  // 게시물 리스트로 리다이렉트
     }

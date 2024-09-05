@@ -13,11 +13,11 @@ public class PostImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String filename;      // 이미지 파일 이름
-    private String filepath;      // 이미지 파일 경로
-    private String description;   // 이미지 설명
+    private String filename;  // 저장된 이미지 파일명
+    private String descriptions;  // 이미지 설명 (optional)
+    private String filepath;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
-    private Post post;  // 각 이미지가 속한 Post 엔티티
+    private Post post;  // 해당 이미지가 속한 게시글
 }

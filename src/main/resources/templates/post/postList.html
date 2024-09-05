@@ -27,6 +27,10 @@
         <div class="post_card" th:each="post : ${posts}">
             <a th:href="@{/posts/detail/{id}(id=${post.id})}">
                 <!-- 썸네일 이미지 -->
+                <div class="post_thumbnail">
+                    <img th:src="${post.thumbnailFilepath != null ? post.thumbnailFilepath : 'https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2'}"
+                         alt="썸네일 이미지" style="width: 100%; height: auto;">
+                </div>
                 <div class="post_info">
                     <h3 th:text="${post.title}">게시글 제목</h3>
                     <p>조회수: <span th:text="${post.views}">0</span></p>

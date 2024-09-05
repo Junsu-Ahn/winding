@@ -24,9 +24,25 @@
         <span class="author">Author: <span th:text="${post.author}">Author Name</span></span>
     </div>
 
+    <!-- 썸네일 이미지 추가 -->
+    <div class="thumbnail">
+        <img th:src="@{${post.thumbnailFilepath}}" alt="썸네일 이미지" style="max-width:100%; height:auto;">
+    </div>
+
     <div class="content">
         <h2>Content</h2>
         <p th:text="${post.description}">내용이 여기에 표시됩니다.</p>
+    </div>
+
+    <!-- 등록된 사진 출력 영역 -->
+    <div class="images-section">
+        <h3>등록된 사진들</h3>
+        <div class="images-grid">
+            <div th:each="image : ${post.images}">
+                <img th:src="@{${image.filepath}}" alt="등록된 이미지" style="max-width:100%; height:auto;">
+                <p th:text="${image.descriptions}">이미지 설명</p>
+            </div>
+        </div>
     </div>
 
     <!-- 지도 영역 -->

@@ -32,19 +32,9 @@ public class Post extends BaseEntity {
     private String author;
     private int views = 0;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<PostImage> images = new ArrayList<>();
-
-    // 이미지 추가 메서드
-    public void addImage(PostImage image) {
-        images.add(image);
-        image.setPost(this);
-    }
-
-    // 이미지 초기화 메서드
-    public void clearImages() {
-        images.clear();
-    }
+    // 썸네일 이미지 필드 추가
+    private String thumbnailFilename;   // 썸네일 파일 이름
+    private String thumbnailFilepath;   // 썸네일 파일 경로
 
     // 개별 경유지 필드
     private String waypoint1;
@@ -58,6 +48,7 @@ public class Post extends BaseEntity {
     private String waypoint3;
     private Double waypoint3Lat;
     private Double waypoint3Lng;
+
 
     public void setWaypoint(int index, String waypoint, Double lat, Double lng) {
         if (index == 1) {
@@ -96,5 +87,18 @@ public class Post extends BaseEntity {
     public void setViewCount(int viewCount) {
         this.views = viewCount;
     }
+    // 이미지 및 설명을 위한 리스트 추가
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostImage> images = new ArrayList<>();
+
+    public void addImage(PostImage image) {
+        this.images.add(image);
+        image.setPost(this);
+    }
+
+    public void clearImages() {
+        this.images.clear();
+    }
 }
+
 

@@ -24,14 +24,20 @@
     <h1>게시글 작성</h1>
     <form id="routeForm" method="post" action="/posts/create" enctype="multipart/form-data">
         <input type="hidden" name="memberId" th:value="${member.id}">
+
+        <!-- 제목 -->
         <div class="form-group">
             <label for="title">제목</label>
             <input type="text" class="form-control" id="title" name="title" placeholder="제목을 입력하세요" required>
         </div>
+
+        <!-- 내용 -->
         <div class="form-group">
             <label for="description">내용</label>
             <textarea class="form-control" id="description" name="description" rows="4" placeholder="내용을 입력하세요" required></textarea>
         </div>
+
+        <!-- 출발지 -->
         <div class="form-group">
             <label for="departure">출발지</label>
             <input type="text" class="form-control" id="departure" name="departure" placeholder="출발지 주소" required readonly>
@@ -39,6 +45,8 @@
             <input type="hidden" id="departureLng" name="departureLng">
             <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('departure')">주소 검색</button>
         </div>
+
+        <!-- 목적지 -->
         <div class="form-group">
             <label for="destination">목적지</label>
             <input type="text" class="form-control" id="destination" name="destination" placeholder="목적지 주소" required readonly>
@@ -47,21 +55,63 @@
             <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('destination')">주소 검색</button>
         </div>
 
-        <!-- 경유지 추가 버튼 -->
-        <div id="waypoints-container">
-            <label>경유지</label>
+        <!-- 썸네일 이미지 업로드 및 미리보기 -->
+        <div class="form-group mt-3">
+            <label for="thumbnail">썸네일 이미지 업로드</label>
+            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" onchange="previewImage(this, 'thumbnail-preview')" required>
+            <img id="thumbnail-preview" src="https://via.placeholder.com/150" alt="썸네일 미리보기" style="width: 182px; height: 182px; object-fit: cover; margin-top: 10px;">
         </div>
-        <button type="button" class="btn btn-secondary mt-2" id="add-waypoint-btn" onclick="addWaypoint()">+ 경유지 추가</button>
 
-        <!-- 이미지 업로드 및 설명 입력 -->
-        <div id="image-upload-container" class="mt-3">
-            <label>이미지 업로드</label>
+        <!-- 추가 이미지 업로드 및 설명란 -->
+        <div id="additional-images-container" class="mt-3">
+            <label>추가 이미지 업로드 및 설명</label>
         </div>
-        <button type="button" class="btn btn-secondary mt-2" id="add-image-btn" onclick="addImageUpload()">+ 이미지 추가</button>
+        <button type="button" class="btn btn-secondary mt-2" id="addImageBtn">+ 이미지 추가</button>
 
         <!-- 확인 버튼 추가 -->
         <button type="submit" class="btn btn-primary mt-2">게시글 등록</button>
     </form>
 </div>
+
+<!-- JavaScript 코드 -->
+<script>
+    let imageCounter = 0; // 이미지 카운터 변수
+
+    // 이미지 및 설명란 추가하는 함수
+    document.getElementById('addImageBtn').addEventListener('click', function() {
+        imageCounter++;
+        const newImageField = `
+            <div class="form-group mt-3" id="image-upload-${imageCounter}">
+                <label for="image${imageCounter}">이미지 ${imageCounter}</label>
+                <input type="file" class="form-control" id="image${imageCounter}" name="images" accept="image/*" onchange="previewImage(this, 'preview_image_${imageCounter}')">
+                <img id="preview_image_${imageCounter}" src="https://via.placeholder.com/150" alt="이미지 미리보기" style="width: 182px; height: 182px; object-fit: cover; margin-top: 10px;">
+
+                <!-- 이미지 설명란 -->
+                <label for="imageDescription${imageCounter}" class="mt-2">이미지 설명</label>
+                <textarea class="form-control" id="imageDescription${imageCounter}" name="imageDescriptions" rows="2" placeholder="이미지 설명을 입력하세요"></textarea>
+
+                <!-- 이미지 삭제 버튼 -->
+                <button type="button" class="btn btn-danger mt-2" onclick="removeImageUpload(${imageCounter})">삭제</button>
+            </div>
+        `;
+        document.getElementById('additional-images-container').insertAdjacentHTML('beforeend', newImageField);
+    });
+
+    // 이미지 및 설명란 삭제하는 함수
+    function removeImageUpload(id) {
+        document.getElementById(`image-upload-${id}`).remove();
+    }
+
+    // 이미지 미리보기 기능
+    function previewImage(input, previewId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById(previewId).src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
 </body>
 </html>
