@@ -81,8 +81,8 @@ public class PostController {
 
     @GetMapping("/list")
     public String list(Model model) {
-        List<Post> posts = this.postService.getAllPosts();
-
+        // 페이징 처리 없이 모든 게시물 가져오기
+        List<Post> posts = postService.getAllPosts();  // getAllPosts는 전체 게시물을 가져오는 메서드
         model.addAttribute("posts", posts);
         return "post/postList";
     }

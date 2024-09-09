@@ -47,22 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function renderPagination() {
-        const pagination = document.querySelector('.pagination');
-        if (!pagination) {
-            console.error('Error: .pagination element not found');
-            return;
-        }
-        pagination.innerHTML = `
-            <a href="#">&laquo;</a>
-            <a href="#">&#8249;</a>
-            <a href="#" class="active">1</a>
-            <a href="#">2</a>
-            <a href="#">3</a>
-            <a href="#">&#8250;</a>
-            <a href="#">&raquo;</a>
-        `;
-    }
+
 
     loadPosts();
 });
