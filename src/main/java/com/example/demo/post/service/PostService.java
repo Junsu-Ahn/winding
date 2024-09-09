@@ -205,5 +205,12 @@ public class PostService {
         return postRepository.findByTitleContainingOrDescriptionContaining(keyword, keyword);
     }
 
+    public List<Post> getPopularPosts() {
+        return postRepository.findTop5ByOrderByViewsDesc();
+    }
 
+    // 등록일 기준 최신 드라이브 코스 5개 가져오기
+    public List<Post> getLatestPosts() {
+        return postRepository.findTop5ByOrderByCreateDateDesc();
+    }
 }

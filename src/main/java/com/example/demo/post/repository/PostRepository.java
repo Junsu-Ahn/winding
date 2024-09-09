@@ -15,10 +15,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE " +
             "(6371 * acos(cos(radians(:memberLat)) * cos(radians(p.destinationLat)) * cos(radians(p.destinationLng) - radians(:memberLng)) + sin(radians(:memberLat)) * sin(radians(p.destinationLat)))) < 100")
     List<Post> findPostsWithinDistance(@Param("memberLat") double memberLat, @Param("memberLng") double memberLng);
-
     List<Post> findByTitleContaining(String title);
     Page<Post> findByTitleContaining(String title, Pageable pageable);
-
-
     List<Post> findByTitleContainingOrDescriptionContaining(String keyword, String keyword1);
+
+    // 조회수 기준 상위 5개의 게시물
+    List<Post> findTop5ByOrderByViewsDesc();
+
+    // 등록일 기준 상위 5개의 게시물
+    List<Post> findTop5ByOrderByCreateDateDesc();
 }

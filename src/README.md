@@ -70,6 +70,7 @@
 <img src="https://github.com/user-attachments/assets/1616a95f-fd5f-4176-b4fe-6781be086cc2">
 
 ## 📱 디렉토리 구조
+```
 src
 ├── main
 │   ├── java
@@ -127,7 +128,7 @@ src
 └── com.example.demo
 ├── MemberServiceTest.java
 └── PostServiceTest.java
-
+```
 ## 📌 페이지 기능 소개
 
 ### 메인화면

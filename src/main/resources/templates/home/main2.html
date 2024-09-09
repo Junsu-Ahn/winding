@@ -35,10 +35,10 @@
     <h2>인기 드라이브 코스</h2>
     <ul class="drive_list">
         <li th:each="drive : ${popularDrives}">
-            <a th:href="@{/drive/detail/{id}(id=${drive.id})}">
-                <img th:src="@{${drive.image}}" alt="드라이브 이미지">
+            <a th:href="@{/posts/detail/{id}(id=${drive.id})}">
+                <img th:src="${drive.thumbnailFilepath != null ? drive.thumbnailFilepath : 'https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2'}" alt="드라이브 이미지">
                 <div class="drive_info">
-                    <h3 th:text="${drive.name}">코스 이름</h3>
+                    <h3 th:text="${drive.title}">코스 이름</h3>
                     <p class="drive_views">조회수: <span th:text="${drive.views}"></span></p>
                 </div>
             </a>
@@ -50,10 +50,10 @@
     <h2>최신 드라이브 코스</h2>
     <ul class="drive_list">
         <li th:each="drive : ${latestDrives}">
-            <a th:href="@{/drive/detail/{id}(id=${drive.id})}">
-                <img th:src="@{${drive.image}}" alt="드라이브 이미지">
+            <a th:href="@{/posts/detail/{id}(id=${drive.id})}">
+                <img th:src="${drive.thumbnailFilepath != null ? drive.thumbnailFilepath : 'https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2'}" alt="드라이브 이미지">
                 <div class="drive_info">
-                    <h3 th:text="${drive.name}">코스 이름</h3>
+                    <h3 th:text="${drive.title}">코스 이름</h3>
                     <p class="drive_views">조회수: <span th:text="${drive.views}"></span></p>
                 </div>
             </a>
