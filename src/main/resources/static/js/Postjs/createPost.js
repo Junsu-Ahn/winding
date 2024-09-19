@@ -1,62 +1,87 @@
 $(document).ready(function () {
     let imageCounter = 1; // 이미지 카운터 변수
+    let waypointCount = 0; // 경유지 개수
+    let waypointMarkers = []; // 경유지 마커를 저장할 배열
+    let map, startMarker, goalMarker, polyline;
+
+    // 지도 초기화 함수
+    function initMap() {
+        map = new naver.maps.Map('map', {
+            center: new naver.maps.LatLng(37.5665, 126.9780), // 기본 위치 (서울)
+            zoom: 10
+        });
+
+        // 출발지와 목적지 마커 생성
+        startMarker = new naver.maps.Marker({
+            map: map,
+            title: '출발지'
+        });
+
+        goalMarker = new naver.maps.Marker({
+            map: map,
+            title: '목적지'
+        });
+    }
+
+    // 지도 초기화
+    initMap();
 
     // 이미지와 설명란 추가하는 함수
-    const addImageField = () => {
-        const imageFieldHtml = `
-        <div class="image_upload_section" data-index="${imageCounter}">
-            <div class="image_upload_wrapper">
-                <input type="file" name="images[${imageCounter - 1}]" accept="image/png, image/gif, image/jpeg" onchange="readURL(this, 'preview_image_${imageCounter}');">
-                <img id="preview_image_${imageCounter}" src="https://via.placeholder.com/150" alt="미리보기" style="width: 182px; height: 182px; object-fit: cover; margin-top: 10px;">
-            </div>
-            <div class="description_section">
-                <textarea name="descriptions[${imageCounter - 1}]" placeholder="이미지 설명을 입력하세요"></textarea>
-            </div>
-            <button type="button" class="remove_image_field" value="삭제">삭제</button>
-        </div>
-        `;
-        $('#imageUploadContainer').append(imageFieldHtml);
-        imageCounter++;
-    };
-
-    // 이미지와 설명란 추가 버튼 클릭 이벤트
-    $('#addImageBtn').click(function (e) {
-        e.preventDefault();
-        addImageField();
-    });
-
-    // 이미지와 설명란 삭제 버튼 이벤트
-    $('#imageUploadContainer').on('click', '.remove_image_field', function (e) {
-        e.preventDefault();
-        $(this).closest('.image_upload_section').remove();
-        updateImageFieldNames();
-    });
-
-    // 이미지 미리보기 기능
-    window.readURL = function (input, previewId) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                $(`#${previewId}`).attr("src", e.target.result);
-            };
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            $(`#${previewId}`).attr("src", 'https://via.placeholder.com/150');
+        function addImageField() {
+            const imageFieldHtml = `
+                <div class="image_upload_section" data-index="${imageCounter}">
+                    <div class="image_upload_wrapper">
+                        <input type="file" name="images[${imageCounter - 1}]" accept="image/png, image/gif, image/jpeg" onchange="readURL(this, 'preview_image_${imageCounter}');">
+                        <img id="preview_image_${imageCounter}" src="https://via.placeholder.com/150" alt="미리보기" style="width: 182px; height: 182px; object-fit: cover; margin-top: 10px;">
+                    </div>
+                    <div class="description_section">
+                        <textarea name="descriptions[${imageCounter - 1}]" placeholder="이미지 설명을 입력하세요"></textarea>
+                    </div>
+                    <button type="button" class="remove_image_field btn btn-danger mt-2" value="삭제">삭제</button>
+                </div>
+            `;
+            $('#additional-images-container').append(imageFieldHtml);
+            imageCounter++;
         }
-    };
 
-    // 이미지 및 설명란의 name 속성을 업데이트하는 함수
-    function updateImageFieldNames() {
-        let currentIndex = 1;
-        $('.image_upload_section').each(function () {
-            $(this).attr('data-index', currentIndex);
-            $(this).find('input[type="file"]').attr('name', `images[${currentIndex - 1}]`);
-            $(this).find('textarea').attr('name', `descriptions[${currentIndex - 1}]`);
-            $(this).find('img').attr('id', `preview_image_${currentIndex}`);
-            currentIndex++;
-        });
-        imageCounter = currentIndex;
-    }
+        // 이미지와 설명란 추가 버튼 클릭 이벤트
+            $('#addImageBtn').click(function (e) {
+                e.preventDefault();
+                addImageField(); // 이미지 추가 칸 생성
+            });
+
+        // 이미지와 설명란 삭제 버튼 이벤트
+            $(document).on('click', '.remove_image_field', function (e) {
+                e.preventDefault();
+                $(this).closest('.image_upload_section').remove();
+                updateImageFieldNames();
+            });
+
+        // 이미지 미리보기 기능
+            window.readURL = function (input, previewId) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $(`#${previewId}`).attr("src", e.target.result);
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    $(`#${previewId}`).attr('src', 'https://via.placeholder.com/150');
+                }
+            };
+
+        // 이미지 및 설명란의 name 속성을 업데이트하는 함수
+            function updateImageFieldNames() {
+                let currentIndex = 1;
+                $('.image_upload_section').each(function () {
+                    $(this).attr('data-index', currentIndex);
+                    $(this).find('input[type="file"]').attr('name', `images[${currentIndex - 1}]`);
+                    $(this).find('textarea').attr('name', `descriptions[${currentIndex - 1}]`);
+                    $(this).find('img').attr('id', `preview_image_${currentIndex}`);
+                    currentIndex++;
+                });
+                imageCounter = currentIndex;
+            }
 
     // 다음 주소 검색 API를 사용하여 주소를 입력하는 함수
     window.execDaumPostcode = function(targetId) {
@@ -82,7 +107,7 @@ $(document).ready(function () {
                 document.getElementById(targetId).value = roadAddress;
                 document.getElementById(targetId + 'Lat').value = response.v2.addresses[0].y;
                 document.getElementById(targetId + 'Lng').value = response.v2.addresses[0].x;
-                updateMap();
+                updateMap(); // 주소 입력 완료 시 지도 업데이트
             } else {
                 alert('해당 주소를 도로명 주소로 변환할 수 없습니다.');
             }
@@ -106,99 +131,90 @@ $(document).ready(function () {
         });
     }
 
-    // 경유지 추가 기능
-    let waypointCount = 0;
+    // 경유지 추가 함수
     window.addWaypoint = function() {
-        waypointCount++;
-        const waypointContainer = document.createElement('div');
-        waypointContainer.className = 'form-group waypoint-group';
-        waypointContainer.id = `waypoint-group-${waypointCount}`;
-        waypointContainer.innerHTML = `
-            <label for="waypoint${waypointCount}">경유지 ${waypointCount}</label>
-            <input type="text" class="form-control" id="waypoint${waypointCount}" name="waypoints[${waypointCount}]" placeholder="경유지 주소" readonly>
-            <input type="hidden" id="waypoint${waypointCount}Lat" name="waypointLats[${waypointCount}]">
-            <input type="hidden" id="waypoint${waypointCount}Lng" name="waypointLngs[${waypointCount}]">
-            <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('waypoint${waypointCount}')">주소 검색</button>
-            <button type="button" class="btn btn-danger mt-2" onclick="removeWaypoint(${waypointCount})">경유지 삭제</button>
-        `;
-        document.getElementById('waypoints-container').appendChild(waypointContainer);
-    };
-
-    window.removeWaypoint = function(id) {
-        const waypointContainer = document.getElementById(`waypoint-group-${id}`);
-        if (waypointContainer) {
-            waypointContainer.remove();
+        if (waypointCount < 3) {
+            waypointCount++;
+            const waypointHtml = `
+                <div class="waypoint-group" id="waypoint-group-${waypointCount}">
+                    <label for="waypoint${waypointCount}">경유지 ${waypointCount}</label>
+                    <input type="text" class="form-control" id="waypoint${waypointCount}" name="waypoints[]" placeholder="경유지 주소" readonly>
+                    <input type="hidden" id="waypoint${waypointCount}Lat" name="waypointLats[]">
+                    <input type="hidden" id="waypoint${waypointCount}Lng" name="waypointLngs[]">
+                    <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('waypoint${waypointCount}')">주소 검색</button>
+                    <button type="button" class="btn btn-danger mt-2 remove-waypoint-btn" data-id="${waypointCount}">경유지 삭제</button>
+                </div>`;
+            $('#waypoints-container').append(waypointHtml);
+        } else {
+            alert('경유지는 최대 3개까지 추가할 수 있습니다.');
         }
     };
 
-    // 사진 추가 기능
-    let imageCount = 0;
-    window.addImageUpload = function() {
-        imageCount++;
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'form-group image-upload-group';
-        imageContainer.id = `image-upload-group-${imageCount}`;
-        imageContainer.innerHTML = `
-            <label for="image${imageCount}">이미지 ${imageCount}</label>
-            <input type="file" class="form-control" id="image${imageCount}" name="images[${imageCount}]">
-            <input type="text" class="form-control mt-2" id="imageDescription${imageCount}" name="imageDescriptions[${imageCount}]" placeholder="이미지 설명을 입력하세요">
-            <button type="button" class="btn btn-danger mt-2" onclick="removeImage(${imageCount})">이미지 삭제</button>
-        `;
-        document.getElementById('image-upload-container').appendChild(imageContainer);
-    };
+    // 경유지 삭제 함수
+    $(document).on('click', '.remove-waypoint-btn', function () {
+        const id = $(this).data('id');
+        $(`#waypoint-group-${id}`).remove();
+        waypointMarkers[id - 1]?.setMap(null); // 지도에서 마커 삭제
+        waypointMarkers[id - 1] = null; // 마커 배열에서 제거
+        waypointCount--;
 
-    window.removeImage = function(id) {
-        const imageContainer = document.getElementById(`image-upload-group-${id}`);
-        if (imageContainer) {
-            imageContainer.remove();
-        }
-    };
+        updateMap(); // 경유지 삭제 후 경로 재계산
+    });
 
-    // 지도 기능
-    var map, startMarker, goalMarker, polyline;
-
-        // 지도 초기화 함수
-        function initMap() {
-            map = new naver.maps.Map('map', {
-                center: new naver.maps.LatLng(37.5665, 126.9780), // 기본 위치 (서울)
-                zoom: 10
-            });
-
-            // 출발지와 목적지 마커를 미리 생성
-            startMarker = new naver.maps.Marker({
-                map: map,
-                title: '출발지'
-            });
-
-            goalMarker = new naver.maps.Marker({
-                map: map,
-                title: '목적지'
-            });
-        }
-
-        // 출발지 및 목적지 입력 시 지도 업데이트 함수
+    // 경로 업데이트 함수
         function updateMap() {
-            var departureLat = parseFloat($('#departureLat').val());
-            var departureLng = parseFloat($('#departureLng').val());
-            var destinationLat = parseFloat($('#destinationLat').val());
-            var destinationLng = parseFloat($('#destinationLng').val());
+            let departureLat = parseFloat($('#departureLat').val());
+            let departureLng = parseFloat($('#departureLng').val());
+            let destinationLat = parseFloat($('#destinationLat').val());
+            let destinationLng = parseFloat($('#destinationLng').val());
 
             if (isNaN(departureLat) || isNaN(departureLng) || isNaN(destinationLat) || isNaN(destinationLng)) {
                 console.error('좌표가 유효하지 않습니다.');
                 return;
             }
 
-            // 마커 위치 업데이트
+            let waypoints = []; // 경유지 좌표 저장
+
+            // 경유지의 위도/경도를 배열에 추가
+            $('.waypoint-group').each(function (index) {
+                const waypointLat = parseFloat($(this).find('input[name="waypointLats[]"]').val());
+                const waypointLng = parseFloat($(this).find('input[name="waypointLngs[]"]').val());
+
+                if (!isNaN(waypointLat) && !isNaN(waypointLng)) {
+                    waypoints.push(new naver.maps.LatLng(waypointLat, waypointLng));
+
+                    // 경유지 마커 추가 또는 업데이트
+                    if (!waypointMarkers[index]) {
+                        waypointMarkers[index] = new naver.maps.Marker({
+                            map: map,
+                            position: waypoints[index],
+                            title: `경유지 ${index + 1}`
+                        });
+                    } else {
+                        waypointMarkers[index].setPosition(waypoints[index]);
+                    }
+                }
+            });
+
+            // 출발지 및 목적지 마커 위치 설정
             startMarker.setPosition(new naver.maps.LatLng(departureLat, departureLng));
             goalMarker.setPosition(new naver.maps.LatLng(destinationLat, destinationLng));
 
-            // 경로 탐색 API 호출하여 경로 그리기
-            fetch(`/api/naver-route?start=${departureLng},${departureLat}&goal=${destinationLng},${destinationLat}&option=trafast`)
+            // 경로를 포함한 경로 요청
+            let waypointsStr = waypoints.map(latlng => `${latlng.lng()},${latlng.lat()}`).join('|');
+
+            let url = `/api/naver-route?start=${departureLng},${departureLat}&goal=${destinationLng},${destinationLat}&option=trafast`;
+            if (waypointsStr) {
+                url += `&waypoints=${waypointsStr}`;
+            }
+
+            // 네이버 경로 API 호출하여 경로 그리기
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     if (data.route.trafast && data.route.trafast.length > 0) {
-                        var route = data.route.trafast[0];
-                        var path = route.path.map(coord => new naver.maps.LatLng(coord[1], coord[0]));
+                        const route = data.route.trafast[0];
+                        const path = route.path.map(coord => new naver.maps.LatLng(coord[1], coord[0]));
 
                         // 경로 Polyline 그리기
                         if (!polyline) {
@@ -214,54 +230,59 @@ $(document).ready(function () {
                         }
 
                         // 경로에 맞게 지도를 확대
-                        var bounds = new naver.maps.LatLngBounds();
+                        const bounds = new naver.maps.LatLngBounds();
                         path.forEach(point => bounds.extend(point));
                         map.fitBounds(bounds);
-
-                        // 캡처를 3초 후에 실행 (캡처 전에 렌더링을 보장하기 위함)
-                        setTimeout(captureMap, 3000);
                     }
                 })
                 .catch(error => console.error('경로 요청 실패:', error));
         }
 
-        // 지도를 캡처하여 썸네일로 설정하는 함수
+        // 게시글 등록 시 지도 캡처 후 썸네일로 설정
+            $('#routeForm').submit(function (e) {
+                e.preventDefault(); // 기본 제출 동작 방지
+
+                captureMap().then(() => {
+                    console.log('지도 캡처 후 폼 제출');
+                    this.submit(); // 폼 제출
+                }).catch((error) => {
+                    console.error('폼 제출 전에 오류가 발생했습니다:', error);
+                });
+            });
+
+    // 썸네일이 없을 경우 지도를 캡처하여 썸네일로 설정하는 함수
         function captureMap() {
             const thumbnailInput = document.getElementById('thumbnail');
             if (thumbnailInput.files.length === 0) {
-                html2canvas(document.getElementById('map'), {
-                    useCORS: true
-                }).then(function (canvas) {
-                    var imgData = canvas.toDataURL('image/png');
-                    $('#thumbnail-preview').attr('src', imgData);
+                return new Promise((resolve, reject) => {
+                    html2canvas(document.getElementById('map'), {
+                        useCORS: true
+                    }).then(function (canvas) {
+                        var imgData = canvas.toDataURL('image/png');
+                        $('#thumbnail-preview').attr('src', imgData);
 
-                    canvas.toBlob(function (blob) {
-                        const file = new File([blob], "thumbnail.png", { type: "image/png" });
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        thumbnailInput.files = dataTransfer.files;
+                        canvas.toBlob(function (blob) {
+                            const file = new File([blob], "thumbnail.png", { type: "image/png" });
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            thumbnailInput.files = dataTransfer.files;
 
-                        console.log('지도 캡처 완료 및 썸네일로 설정');
+                            console.log('지도 캡처 완료 및 썸네일로 설정');
+                            resolve();
+                        });
+                    }).catch(function (error) {
+                        console.error('지도를 캡처하는 동안 오류가 발생했습니다:', error);
+                        reject(error);
                     });
-                }).catch(function (error) {
-                    console.error('지도를 캡처하는 동안 오류가 발생했습니다:', error);
                 });
+            } else {
+                return Promise.resolve(); // 이미 썸네일이 있는 경우
             }
         }
 
-        // 썸네일이 없을 경우 지도를 캡처해서 썸네일로 설정하는 함수
-        $('#routeForm').submit(function (e) {
-            const thumbnailInput = document.getElementById('thumbnail');
-            if (thumbnailInput.files.length === 0) {
-                e.preventDefault(); // 폼 제출을 막음
-                updateMap();        // 경로 업데이트 후 지도 캡처
-                return false;        // 캡처 완료 후 폼이 제출되도록 함
-            }
-        });
+    // 출발지, 목적지 변경 시 지도 업데이트
+    $('#departure, #destination').on('change', updateMap);
 
-        // 지도 초기화
-        initMap();
-
-        // 출발지 또는 목적지 변경 시 지도 업데이트
-        $('#departure, #destination').on('change', updateMap);
-    });
+    // 경유지 변경 시 지도 업데이트
+    $(document).on('change', '.waypoint-group input', updateMap);
+});

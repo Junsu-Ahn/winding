@@ -57,6 +57,11 @@
             <input type="hidden" id="destinationLng" name="destinationLng">
             <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('destination')">주소 검색</button>
         </div>
+        <!-- 경유지 추가 버튼 및 입력 필드 -->
+        <div id="waypoints-container" class="form-group mt-3">
+            <label>경유지 추가</label>
+            <button type="button" class="btn btn-secondary" onclick="addWaypoint()">+ 경유지 추가</button>
+        </div>
 
         <!-- 지도 -->
         <div id="map-container" style="width: 50%; height: 400px; float: left;">

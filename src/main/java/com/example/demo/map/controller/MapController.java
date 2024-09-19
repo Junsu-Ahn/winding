@@ -34,7 +34,15 @@ public class MapController {
             @RequestParam(name = "waypoints", required = false) String waypoints,
             @RequestParam(name = "option", required = false, defaultValue = "trafast") String option) {
 
-        return mapService.getRouteFromNaver(start, goal, waypoints, option);
+        // 만약 waypoints가 존재하면, 경유지를 포함한 경로 요청
+        if (waypoints != null && !waypoints.isEmpty()) {
+            System.out.println("경유지를 포함한 경로 요청");
+            return mapService.getRouteFromNaver(start, goal, waypoints, option);
+        } else {
+            // 경유지가 없으면 출발지와 목적지 간의 경로만 요청
+            System.out.println("경유지가 없는 경로 요청");
+            return mapService.getRouteFromNaver(start, goal, null, option);
+        }
     }
 
     @GetMapping("/posts")
