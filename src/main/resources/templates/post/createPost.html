@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>게시글 작성</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
     <!-- 다음 주소 검색 API -->
@@ -55,10 +58,15 @@
             <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('destination')">주소 검색</button>
         </div>
 
+        <!-- 지도 -->
+        <div id="map-container" style="width: 50%; height: 400px; float: left;">
+            <div id="map" style="width: 100%; height: 100%;"></div>
+        </div>
+
         <!-- 썸네일 이미지 업로드 및 미리보기 -->
         <div class="form-group mt-3">
             <label for="thumbnail">썸네일 이미지 업로드</label>
-            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" onchange="previewImage(this, 'thumbnail-preview')" required>
+            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" onchange="previewImage(this, 'thumbnail-preview')">
             <img id="thumbnail-preview" src="https://via.placeholder.com/150" alt="썸네일 미리보기" style="width: 182px; height: 182px; object-fit: cover; margin-top: 10px;">
         </div>
 
@@ -72,46 +80,5 @@
         <button type="submit" class="btn btn-primary mt-2">게시글 등록</button>
     </form>
 </div>
-
-<!-- JavaScript 코드 -->
-<script>
-    let imageCounter = 0; // 이미지 카운터 변수
-
-    // 이미지 및 설명란 추가하는 함수
-    document.getElementById('addImageBtn').addEventListener('click', function() {
-        imageCounter++;
-        const newImageField = `
-            <div class="form-group mt-3" id="image-upload-${imageCounter}">
-                <label for="image${imageCounter}">이미지 ${imageCounter}</label>
-                <input type="file" class="form-control" id="image${imageCounter}" name="images" accept="image/*" onchange="previewImage(this, 'preview_image_${imageCounter}')">
-                <img id="preview_image_${imageCounter}" src="https://via.placeholder.com/150" alt="이미지 미리보기" style="width: 182px; height: 182px; object-fit: cover; margin-top: 10px;">
-
-                <!-- 이미지 설명란 -->
-                <label for="imageDescription${imageCounter}" class="mt-2">이미지 설명</label>
-                <textarea class="form-control" id="imageDescription${imageCounter}" name="imageDescriptions" rows="2" placeholder="이미지 설명을 입력하세요"></textarea>
-
-                <!-- 이미지 삭제 버튼 -->
-                <button type="button" class="btn btn-danger mt-2" onclick="removeImageUpload(${imageCounter})">삭제</button>
-            </div>
-        `;
-        document.getElementById('additional-images-container').insertAdjacentHTML('beforeend', newImageField);
-    });
-
-    // 이미지 및 설명란 삭제하는 함수
-    function removeImageUpload(id) {
-        document.getElementById(`image-upload-${id}`).remove();
-    }
-
-    // 이미지 미리보기 기능
-    function previewImage(input, previewId) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById(previewId).src = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-</script>
 </body>
 </html>

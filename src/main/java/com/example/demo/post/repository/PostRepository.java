@@ -24,4 +24,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 등록일 기준 상위 5개의 게시물
     List<Post> findTop5ByOrderByCreateDateDesc();
+
+    List<Post> findByRegionCode(int regionCode);
 }

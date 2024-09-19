@@ -1,52 +1,49 @@
-@font-face {
-    font-family: 'Pretendard-Regular';
-    src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
-    font-weight: 400;
-    font-style: normal;
+/* 서브메뉴 숨김 */
+.submenu {
+  display: none;
+  position: absolute;
+  background-color: #333;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  min-width: 160px;
+  z-index: 1;
 }
 
-html, body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Pretendard-Regular';
+.submenu li {
+  padding: 10px;
 }
 
-.navbar {
-    background-color: #1E3A8A;
-    padding: 10px;
+.submenu li a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  padding: 10px;
 }
 
-.navbar-brand {
-    color: #fff;
-    text-decoration: none;
-    font-size: 24px;
+.submenu li a:hover {
+  background-color: #575757;
 }
 
-.navbar-nav {
-    list-style: none;
-    display: flex;
+/* 메인 메뉴 아이템 스타일 */
+.main_menu {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
-.nav-item {
-    margin-left: 20px;
+.main_menu li {
+  display: inline-block;
+  margin-right: 20px;
+  position: relative;
 }
 
-.nav-link {
-    color: #fff;
-    text-decoration: none;
-    font-size: 18px;
+/* 프로필 이미지 스타일 */
+#userIcon img {
+  cursor: pointer;
 }
 
-.nav-link:hover {
-    text-decoration: underline;
-}
-
-footer {
-    background-color: #f8f9fa;
-    text-align: center;
-    padding: 10px 0;
-}
-
-.text-muted {
-    color: #6c757d;
+/* 서브메뉴가 보일 때의 스타일 */
+.has_submenu.open > .submenu {
+  display: block;
 }

@@ -3,7 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>South Korea Map Buttons</title>
+    <title>지역 선택</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+          // 각 버튼에 대한 클릭 이벤트 설정
+          $('#button1').click(function() {
+            window.location.href = '/posts/region/2'; // 강원도
+          });
+
+          $('#button2').click(function() {
+            window.location.href = '/posts/region/1'; // 경기도
+          });
+
+          $('#button3').click(function() {
+            window.location.href = '/posts/region/8'; // 충남
+          });
+
+          $('#button4').click(function() {
+            window.location.href = '/posts/region/7'; // 충북
+          });
+
+          $('#button5').click(function() {
+            window.location.href = '/posts/region/6'; // 전북
+          });
+
+          $('#button6').click(function() {
+            window.location.href = '/posts/region/5'; // 전남
+          });
+
+          $('#button7').click(function() {
+            window.location.href = '/posts/region/4'; // 경남
+          });
+
+          $('#button8').click(function() {
+            window.location.href = '/posts/region/3'; // 경북
+          });
+        });
+    </script>
     <style>
         body, html {
             margin: 0;

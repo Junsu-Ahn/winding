@@ -25,13 +25,10 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-
 public class MemberService {
 
     private final MemberRepository memberRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final EmailService emailService;
 
     @Value("${custom.fileDirPath}")
@@ -39,65 +36,55 @@ public class MemberService {
 
     private static final String DEFAULT_PROFILE_IMAGE_URL = "https://github.com/Junsu-Ahn/cookers/assets/134615615/5c0de0e0-b917-47ae-94d4-d8ad366dce7f";
 
+    // 회원가입 메서드
     public Member signup(String address, String username, String password, String passwordConfirm, String nickname, String email, Long hit, String url) {
-
         if (!password.equals(passwordConfirm)) {
             throw new PasswordMismatchException("비밀번호가 서로 다릅니다.");
         }
-
         if (memberRepository.existsByUsername(username)) {
             throw new DataIntegrityViolationException("이미 존재하는 아이디입니다.");
         }
-
-        // 중복 닉네임 확인
         if (memberRepository.existsByNickname(nickname)) {
             throw new DataIntegrityViolationException("이미 존재하는 닉네임입니다.");
         }
 
-        Member member = Member
-                .builder()
+        Member member = Member.builder()
                 .address(address)
                 .username(username)
                 .password(passwordEncoder.encode(password))
                 .profileImg(url)
                 .nickname(nickname)
                 .email(email)
-
-                .role(Role.ROLE_USER)  // 기본적으로 USER 권한을 부여
+                .role(Role.ROLE_USER)  // 기본 권한 USER
                 .build();
 
-       // emailService.send(email, "Winding 회원가입을 축하합니다!", "Winding 회원가입이 정상적으로 완료되었습니다^^~!");
         return memberRepository.save(member);
     }
 
+    // 관리자 계정 생성
     @Transactional
     public void createAdmin() {
-        // 관리자 계정이 있는지 확인
         if (memberRepository.findByUsername("admin").isEmpty()) {
-            // 관리자 계정 생성
             Member admin = Member.builder()
                     .username("admin")
-                    .password(passwordEncoder.encode("admin")) // 비밀번호 암호화
+                    .password(passwordEncoder.encode("admin"))
                     .nickname("Admin")
                     .email("admin@example.com")
                     .address("Admin Address")
-                    .role(Role.ROLE_ADMIN) // 관리자 권한 부여
+                    .role(Role.ROLE_ADMIN)
                     .build();
-
             memberRepository.save(admin);
         }
     }
 
+    // 소셜 로그인 처리
     @Transactional
     public Member whenSocialLogin(String address, String username, String nickname, String profileImageUrl, String email) {
-        Optional<Member> opMember = findByUsername(username);
-
-        if (opMember.isPresent()) return opMember.get();
-
-        // 소셜 로그인를 통한 가입시 비번은 없다.
-        return signup("", username,  "", "",nickname, email, 0L, profileImageUrl); // 최초 로그인 시 딱 한번 실행
+        return memberRepository.findByUsername(username)
+                .orElseGet(() -> signup(address, username, "", "", nickname, email, 0L, profileImageUrl));
     }
 
+    // 관리자에 의한 회원 삭제
     @Transactional
     public void deleteMemberByAdmin(String username) {
         Member member = memberRepository.findByUsername(username)
@@ -105,70 +92,50 @@ public class MemberService {
         memberRepository.delete(member);
     }
 
-
+    // 사용자 이름으로 회원 조회
     public Optional<Member> findByUsername(String username) {
         return memberRepository.findByUsername(username);
     }
 
+    public Optional<Member> findById(Long id) {
+        return memberRepository.findById(id);
+    }
+
+    // 이메일로 회원 조회
     public List<Member> findByUserEmail(String email) {
         return memberRepository.findByemail(email);
     }
+
+    // 전체 회원 목록 조회
     public List<Member> getAllMembers() {
-        List<Member> members = memberRepository.findAll();
-        return members != null ? members : Collections.emptyList();
+        return Optional.ofNullable(memberRepository.findAll()).orElse(Collections.emptyList());
     }
 
+    // 비밀번호 인증
     public boolean authenticateMember(String username, String password) {
-        Optional<Member> memberOptional = memberRepository.findByUsername(username);
-        if (memberOptional.isPresent()) {
-            Member member = memberOptional.get();
-            return passwordEncoder.matches(password, member.getPassword());
-        }
-        return false;
-    }
-
-    public Member getMember(String username) {
-        Optional<Member> member = this.memberRepository.findByUsername(username);
-        if (member.isPresent()) {
-            return member.get();
-        } else {
-            throw new DataNotFoundException("member not found");
-        }
-    }
-
-    public Member getMemberByUsername(String username) {
         return memberRepository.findByUsername(username)
-                .orElseThrow();
+                .map(member -> passwordEncoder.matches(password, member.getPassword()))
+                .orElse(false);
     }
 
+    // 비밀번호 변경
+    @Transactional
+    public boolean changePassword(String username, String currentPassword, String newPassword) {
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-    /*@Transactional(readOnly = true)
-    public Long calculateTotalHitsForMember(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElse(null);
-        if (member == null) {
-            return 0L;
+        // 현재 비밀번호 확인
+        if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
+            return false;
         }
 
-        Set<RecipeRecommendation> recipeRecommendations = member.getRecipeRecommendations();
-        Long totalHits = 0L;
-        for (RecipeRecommendation recommendation : recipeRecommendations) {
-            Recipe recipe = recommendation.getRecipe();
-            if (recipe != null) {
-                totalHits += recipe.getHit();
-            }
-        }
-        return totalHits;
-    }*/
-
-    public void save(Member member) {
+        // 새로운 비밀번호 설정
+        member.setPassword(passwordEncoder.encode(newPassword));
         memberRepository.save(member);
+        return true;
     }
 
-    public void delete(Member member) {memberRepository.delete(member);}
-
-    // 추가//
-
-
+    // 회원 정보 업데이트 (닉네임 및 이메일)
     @Transactional
     public Member updateMember(String username, String nickname, String email, MultipartFile profileImg) {
         Member member = memberRepository.findByUsername(username)
@@ -185,6 +152,7 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
+    // 기본 프로필 이미지로 변경
     @Transactional
     public void setDefaultProfile(String username) {
         Member member = memberRepository.findByUsername(username)
@@ -193,6 +161,7 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    // 회원 삭제
     @Transactional
     public void deleteMember(String username) {
         Member member = memberRepository.findByUsername(username)
@@ -200,6 +169,7 @@ public class MemberService {
         memberRepository.delete(member);
     }
 
+    // 파일 저장
     private String saveFile(MultipartFile file) {
         try {
             Path rootLocation = Paths.get(fileDirPath);
@@ -215,27 +185,8 @@ public class MemberService {
         }
     }
 
-    public Optional<Member> findByusername(String username) {
-        return memberRepository.findByUsername(username);
+    public Member save(Member member) {
+        // Member 객체를 저장 (새로 추가되거나 기존 데이터 업데이트)
+        return memberRepository.save(member);
     }
-
-    public boolean changePassword(String username, String currentPassword, String newPassword) {
-        Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-
-        // 현재 비밀번호 확인
-        if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
-            return false; // 현재 비밀번호가 일치하지 않는 경우 변경 실패
-        }
-
-        // 새로운 비밀번호 설정
-        member.setPassword(passwordEncoder.encode(newPassword));
-        memberRepository.save(member);
-        return true; // 비밀번호 변경 성공
-    }
-
-    public Optional<Member> findById(Long memberId) {
-        return memberRepository.findById(memberId);
-    }
-    //여기까지
 }

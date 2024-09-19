@@ -32,7 +32,7 @@ $(document).ready(function () {
         updateImageFieldNames();
     });
 
-    // 미리보기 기능
+    // 이미지 미리보기 기능
     window.readURL = function (input, previewId) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
@@ -82,6 +82,7 @@ $(document).ready(function () {
                 document.getElementById(targetId).value = roadAddress;
                 document.getElementById(targetId + 'Lat').value = response.v2.addresses[0].y;
                 document.getElementById(targetId + 'Lng').value = response.v2.addresses[0].x;
+                updateMap();
             } else {
                 alert('해당 주소를 도로명 주소로 변환할 수 없습니다.');
             }
@@ -152,4 +153,115 @@ $(document).ready(function () {
             imageContainer.remove();
         }
     };
-});
+
+    // 지도 기능
+    var map, startMarker, goalMarker, polyline;
+
+        // 지도 초기화 함수
+        function initMap() {
+            map = new naver.maps.Map('map', {
+                center: new naver.maps.LatLng(37.5665, 126.9780), // 기본 위치 (서울)
+                zoom: 10
+            });
+
+            // 출발지와 목적지 마커를 미리 생성
+            startMarker = new naver.maps.Marker({
+                map: map,
+                title: '출발지'
+            });
+
+            goalMarker = new naver.maps.Marker({
+                map: map,
+                title: '목적지'
+            });
+        }
+
+        // 출발지 및 목적지 입력 시 지도 업데이트 함수
+        function updateMap() {
+            var departureLat = parseFloat($('#departureLat').val());
+            var departureLng = parseFloat($('#departureLng').val());
+            var destinationLat = parseFloat($('#destinationLat').val());
+            var destinationLng = parseFloat($('#destinationLng').val());
+
+            if (isNaN(departureLat) || isNaN(departureLng) || isNaN(destinationLat) || isNaN(destinationLng)) {
+                console.error('좌표가 유효하지 않습니다.');
+                return;
+            }
+
+            // 마커 위치 업데이트
+            startMarker.setPosition(new naver.maps.LatLng(departureLat, departureLng));
+            goalMarker.setPosition(new naver.maps.LatLng(destinationLat, destinationLng));
+
+            // 경로 탐색 API 호출하여 경로 그리기
+            fetch(`/api/naver-route?start=${departureLng},${departureLat}&goal=${destinationLng},${destinationLat}&option=trafast`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.route.trafast && data.route.trafast.length > 0) {
+                        var route = data.route.trafast[0];
+                        var path = route.path.map(coord => new naver.maps.LatLng(coord[1], coord[0]));
+
+                        // 경로 Polyline 그리기
+                        if (!polyline) {
+                            polyline = new naver.maps.Polyline({
+                                path: path,
+                                strokeColor: '#FF0000',
+                                strokeOpacity: 0.8,
+                                strokeWeight: 6,
+                                map: map
+                            });
+                        } else {
+                            polyline.setPath(path);
+                        }
+
+                        // 경로에 맞게 지도를 확대
+                        var bounds = new naver.maps.LatLngBounds();
+                        path.forEach(point => bounds.extend(point));
+                        map.fitBounds(bounds);
+
+                        // 캡처를 3초 후에 실행 (캡처 전에 렌더링을 보장하기 위함)
+                        setTimeout(captureMap, 3000);
+                    }
+                })
+                .catch(error => console.error('경로 요청 실패:', error));
+        }
+
+        // 지도를 캡처하여 썸네일로 설정하는 함수
+        function captureMap() {
+            const thumbnailInput = document.getElementById('thumbnail');
+            if (thumbnailInput.files.length === 0) {
+                html2canvas(document.getElementById('map'), {
+                    useCORS: true
+                }).then(function (canvas) {
+                    var imgData = canvas.toDataURL('image/png');
+                    $('#thumbnail-preview').attr('src', imgData);
+
+                    canvas.toBlob(function (blob) {
+                        const file = new File([blob], "thumbnail.png", { type: "image/png" });
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        thumbnailInput.files = dataTransfer.files;
+
+                        console.log('지도 캡처 완료 및 썸네일로 설정');
+                    });
+                }).catch(function (error) {
+                    console.error('지도를 캡처하는 동안 오류가 발생했습니다:', error);
+                });
+            }
+        }
+
+        // 썸네일이 없을 경우 지도를 캡처해서 썸네일로 설정하는 함수
+        $('#routeForm').submit(function (e) {
+            const thumbnailInput = document.getElementById('thumbnail');
+            if (thumbnailInput.files.length === 0) {
+                e.preventDefault(); // 폼 제출을 막음
+                updateMap();        // 경로 업데이트 후 지도 캡처
+                return false;        // 캡처 완료 후 폼이 제출되도록 함
+            }
+        });
+
+        // 지도 초기화
+        initMap();
+
+        // 출발지 또는 목적지 변경 시 지도 업데이트
+        $('#departure, #destination').on('change', updateMap);
+    });

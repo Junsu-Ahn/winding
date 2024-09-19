@@ -12,11 +12,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 
 @Service
 public class MapService {
 
+    @Value("$custom.fileDirPath")
+    private String fileDirPath;
     @Value("${custom.naver.api.client.id}")
     private String clientId;
 

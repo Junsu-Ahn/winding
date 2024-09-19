@@ -49,6 +49,40 @@ public class Post extends BaseEntity {
     private Double waypoint3Lat;
     private Double waypoint3Lng;
 
+    // 지역 코드를 위한 필드 추가
+    private int regionCode;
+
+    // 지역 코드 설정 메서드
+    public void assignRegionCode() {
+        if (destinationLat >= 37.413294 && destinationLat <= 38.263939 &&
+                destinationLng >= 126.764655 && destinationLng <= 127.862730) {
+            this.regionCode = 1; // 경기도
+        } else if (destinationLat >= 37.008487 && destinationLat <= 38.623477 &&
+                destinationLng >= 127.237047 && destinationLng <= 129.305878) {
+            this.regionCode = 2; // 강원도
+        } else if (destinationLat >= 35.691015 && destinationLat <= 37.003309 &&
+                destinationLng >= 128.146118 && destinationLng <= 129.340241) {
+            this.regionCode = 3; // 경상북도
+        } else if (destinationLat >= 34.564312 && destinationLat <= 35.691015 &&
+                destinationLng >= 127.886001 && destinationLng <= 129.321489) {
+            this.regionCode = 4; // 경상남도
+        } else if (destinationLat >= 34.0167 && destinationLat <= 35.1222 &&
+                destinationLng >= 126.1358 && destinationLng <= 127.9984) {
+            this.regionCode = 5; // 전라남도
+        } else if (destinationLat >= 35.411 && destinationLat <= 36.3664 &&
+                destinationLng >= 126.5571 && destinationLng <= 127.7654) {
+            this.regionCode = 6; // 전라북도
+        } else if (destinationLat >= 36.0163 && destinationLat <= 37.0579 &&
+                destinationLng >= 127.4895 && destinationLng <= 128.0889) {
+            this.regionCode = 7; // 충청북도
+        } else if (destinationLat >= 36.1054 && destinationLat <= 37.0141 &&
+                destinationLng >= 126.3251 && destinationLng <= 127.4895) {
+            this.regionCode = 8; // 충청남도
+        } else {
+            this.regionCode = 0; // 기타 지역
+        }
+    }
+
 
     public void setWaypoint(int index, String waypoint, Double lat, Double lng) {
         if (index == 1) {

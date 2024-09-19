@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원 정보 수정</title>
+  <link rel="stylesheet" href="/css/edit.css">
+</head>
+<body>
+<h1>회원 정보 수정</h1>
+
+<form action="/member/edit" method="post" enctype="multipart/form-data">
+  <div>
+    <label for="nickname">닉네임</label>
+    <input type="text" id="nickname" name="nickname" th:value="${member.nickname}" required>
+  </div>
+  <div>
+    <label for="email">이메일</label>
+    <input type="email" id="email" name="email" th:value="${member.email}" required>
+  </div>
+  <div>
+    <label for="profileImg">프로필 이미지</label>
+    <input type="file" id="profileImg" name="profileImg" onchange="previewImage(event)">
+    <!-- 미리보기 이미지 추가 -->
+    <img id="profilePreview" src="#" alt="프로필 미리보기" style="display:none; margin-top: 10px; max-width: 100%;">
+  </div>
+  <button type="submit">저장</button>
+</form>
+
+<form action="/member/setDefaultProfile" method="post">
+  <button type="submit">기본 프로필로 변경</button>
+</form>
+
+<form action="/member/editPw" method="get">
+  <button type="submit">비밀번호 변경</button>
+</form>
+
+<form action="/member/delete" method="post">
+  <button type="submit">회원 탈퇴</button>
+</form>
+
+<script>
+  // 이미지 미리보기 기능
+  function previewImage(event) {
+    const reader = new FileReader();
+    const preview = document.getElementById('profilePreview');
+
+    reader.onload = function() {
+      preview.src = reader.result;
+      preview.style.display = 'block';  // 이미지를 보이게 설정
+    };
+
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>
+</body>
+</html>
