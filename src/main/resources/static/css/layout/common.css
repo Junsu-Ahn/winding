@@ -1,0 +1,43 @@
+@font-face {
+    font-family: 'Pretendard-Regular';
+    src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
+html > body ul,
+html > body li {
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+html > body {
+  font-family: 'Pretendard-Regular';
+  text-underline-position: under;
+}
+
+.collapse {
+    visibility: visible !important;
+}
+
+/* 페이지네이션 커스텀 */
+.page-item.active .page-link {
+    background-color: transparent;
+    color: #222;
+    text-decoration: underline;
+    font-weight: bold;
+    opacity: 1;
+}
+
+.page-link {
+    color: #1E3A8A;
+    border: none;
+    opacity: .7;
+}
+
+.page-link:hover {
+    background-color: transparent;
+    border: none;
+    text-decoration: underline;
+}

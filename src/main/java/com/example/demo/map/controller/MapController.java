@@ -50,6 +50,4 @@ public class MapController {
         List<Post> posts = postService.getAllPosts();
         return ResponseEntity.ok(posts); // posts에 id가 포함되어 있는지 확인
     }
-
-
 }
