@@ -1,6 +1,73 @@
 <!DOCTYPE html>
-<html layout:decorate="~{market/layout}">
-<section layout:fragment="content" class="flex-1 flex justify-center items-center">
-  <h1 class="text-[20px] font-bold">당신이 원하는 모든 강의</h1>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>페이지 뼈대</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<!-- 상단 바 -->
+<header class="bg-white border-b border-gray-200">
+  <div class="container mx-auto flex justify-between items-center py-2 text-sm text-gray-600">
+    <div class="flex space-x-4">
+      <a href="#" class="hover:text-blue-500">고객센터</a>
+      <a href="#" class="hover:text-blue-500">즐겨찾기 추가</a>
+    </div>
+
+    <!-- 로그인 상태 확인 -->
+    <div class="flex space-x-4 items-center">
+      <!-- 로그인 하지 않은 경우 -->
+      <a sec:authorize="isAnonymous()" href="/member/signup" class="border px-2 py-1 rounded hover:bg-gray-200">회원가입</a>
+      <a sec:authorize="isAnonymous()" href="/member/login" class="border px-2 py-1 rounded hover:bg-gray-200">로그인</a>
+
+      <!-- 로그인 한 경우 -->
+      <span sec:authorize="isAuthenticated()" class="text-gray-700 font-bold" th:text="${#authentication.name} + '님'">사용자명님</span>
+      <a sec:authorize="isAuthenticated()" href="/mypage" class="hover:text-blue-500">마이페이지</a>
+      <a sec:authorize="isAuthenticated()" href="/products" class="hover:text-blue-500">물품등록</a>
+      <a sec:authorize="isAuthenticated()" href="/mileage/charge" class="hover:text-blue-500">마일리지충전</a>
+      <a sec:authorize="isAuthenticated()" href="/mileage/withdraw" class="hover:text-blue-500">마일리지출금</a>
+      <a sec:authorize="isAuthenticated()" href="/chat" class="hover:text-blue-500">채팅내역</a>
+      <a sec:authorize="isAuthenticated()" href="/logout" class="border px-2 py-1 rounded hover:bg-gray-200">로그아웃</a>
+    </div>
+
+  </div>
+</header>
+
+<!-- 로고 및 검색 바 -->
+<section class="bg-white py-6">
+  <div class="container mx-auto flex items-center justify-between">
+    <!-- 로고 -->
+    <div class="flex-shrink-0">
+      <a href="/market/main"><img src="https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2" alt="로고" class="w-32"></a>
+    </div>
+
+    <!-- 검색창 -->
+    <div class="flex items-center w-full max-w-lg">
+      <input type="text" class="border border-blue-500 w-full py-2 px-4" placeholder="검색">
+      <button class="bg-white border border-blue-500 text-blue-500 px-4 py-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.42-1.42l4.27 4.27a1 1 0 01-1.42 1.42l-4.27-4.27zM8 14a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </div>
 </section>
+
+<!-- 카테고리 메뉴 -->
+<nav class="bg-blue-900 py-4">
+  <div class="container mx-auto flex justify-between text-white px-20">
+    <a href="#" class="hover:underline">판매등록</a>
+    <a href="#" class="hover:underline">캐릭터 거래</a>
+    <a href="#" class="hover:underline">게임머니 거래</a>
+    <a href="#" class="hover:underline">상품권몰</a>
+    <a href="#" class="hover:underline">마이페이지</a>
+    <a href="#" class="hover:underline">마일리지 충전</a>
+    <a href="#" class="hover:underline">마일리지 출금</a>
+  </div>
+</nav>
+
+</body>
 </html>

@@ -39,9 +39,6 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(new AntPathRequestMatcher("/**"))) // CSRF 보호 비활성화
-//                .csrf(csrf -> csrf
-//                        .ignoringRequestMatchers("/oauth2/login/info", "/admin/**")) // CSRF 보호 제외 경로 설정
-//                .addFilterBefore(new HiddenHttpMethodFilter(), CsrfFilter.class) // HTTP 메소드 허용 필터 추가
                 .build();
     }
 
