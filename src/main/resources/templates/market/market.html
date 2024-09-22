@@ -3,71 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>페이지 뼈대</title>
-  <!-- Tailwind CSS -->
+  <title>메인 페이지</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100">
+<body>
 
-<!-- 상단 바 -->
-<header class="bg-white border-b border-gray-200">
-  <div class="container mx-auto flex justify-between items-center py-2 text-sm text-gray-600">
-    <div class="flex space-x-4">
-      <a href="#" class="hover:text-blue-500">고객센터</a>
-      <a href="#" class="hover:text-blue-500">즐겨찾기 추가</a>
+<!-- layout.html을 삽입 -->
+<div th:insert="~{market/layout :: layout}"></div>
+    <!-- 내비게이션 바 -->
+    <nav class="bg-blue-900 py-4 mb-6">
+      <div class="container mx-auto flex justify-center text-white space-x-40 px-20">
+        <a href="#" class="hover:underline">마일리지 충전</a>
+        <a href="#" class="hover:underline">마일리지 출금</a>
+        <a href="#" class="hover:underline">중고 장터</a>
+        <a href="#" class="hover:underline">마이페이지</a>
+      </div>
+    </nav>
+<div class="container mx-auto px-32">
+    <!-- 프로모션 배너 -->
+    <section class="bg-blue-500 text-white py-6">
+      <div class="container mx-auto text-center">
+        <h1 class="text-2xl font-bold mb-2">자동차 용품 특별 할인 이벤트!</h1>
+        <p class="mb-4">최대 50% 할인 혜택을 지금 바로 만나보세요!</p>
+        <a href="#" class="bg-white text-blue-500 px-4 py-2 rounded">자세히 보기</a>
+      </div>
+    </section>
+
+<section class="container mx-auto py-10">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">주요 카테고리</h2>
+  <div class="grid grid-cols-5 gap-4">
+    <div class="bg-white p-4 shadow-md text-center">
+      <a href="#">
+        <img src="세차용품 이미지 링크" alt="세차용품" class="w-full h-40 object-cover mb-2">
+        <h3 class="text-lg font-semibold">세차용품</h3>
+      </a>
     </div>
-
-    <!-- 로그인 상태 확인 -->
-    <div class="flex space-x-4 items-center">
-      <!-- 로그인 하지 않은 경우 -->
-      <a sec:authorize="isAnonymous()" href="/member/signup" class="border px-2 py-1 rounded hover:bg-gray-200">회원가입</a>
-      <a sec:authorize="isAnonymous()" href="/member/login" class="border px-2 py-1 rounded hover:bg-gray-200">로그인</a>
-
-      <!-- 로그인 한 경우 -->
-      <span sec:authorize="isAuthenticated()" class="text-gray-700 font-bold" th:text="${#authentication.name} + '님'">사용자명님</span>
-      <a sec:authorize="isAuthenticated()" href="/mypage" class="hover:text-blue-500">마이페이지</a>
-      <a sec:authorize="isAuthenticated()" href="/products" class="hover:text-blue-500">물품등록</a>
-      <a sec:authorize="isAuthenticated()" href="/mileage/charge" class="hover:text-blue-500">마일리지충전</a>
-      <a sec:authorize="isAuthenticated()" href="/mileage/withdraw" class="hover:text-blue-500">마일리지출금</a>
-      <a sec:authorize="isAuthenticated()" href="/chat" class="hover:text-blue-500">채팅내역</a>
-      <a sec:authorize="isAuthenticated()" href="/logout" class="border px-2 py-1 rounded hover:bg-gray-200">로그아웃</a>
+    <div class="bg-white p-4 shadow-md text-center">
+      <a href="#">
+        <img src="엔진오일 이미지 링크" alt="엔진오일" class="w-full h-40 object-cover mb-2">
+        <h3 class="text-lg font-semibold">엔진오일</h3>
+      </a>
     </div>
-
-  </div>
-</header>
-
-<!-- 로고 및 검색 바 -->
-<section class="bg-white py-6">
-  <div class="container mx-auto flex items-center justify-between">
-    <!-- 로고 -->
-    <div class="flex-shrink-0">
-      <a href="/market/main"><img src="https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2" alt="로고" class="w-32"></a>
+    <div class="bg-white p-4 shadow-md text-center">
+      <a href="#">
+        <img src="워셔액 이미지 링크" alt="워셔액" class="w-full h-40 object-cover mb-2">
+        <h3 class="text-lg font-semibold">워셔액</h3>
+      </a>
     </div>
-
-    <!-- 검색창 -->
-    <div class="flex items-center w-full max-w-lg">
-      <input type="text" class="border border-blue-500 w-full py-2 px-4" placeholder="검색">
-      <button class="bg-white border border-blue-500 text-blue-500 px-4 py-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.42-1.42l4.27 4.27a1 1 0 01-1.42 1.42l-4.27-4.27zM8 14a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
-        </svg>
-      </button>
+    <div class="bg-white p-4 shadow-md text-center">
+      <a href="#">
+        <img src="차량 관리용품 이미지 링크" alt="차량 관리용품" class="w-full h-40 object-cover mb-2">
+        <h3 class="text-lg font-semibold">차량 관리용품</h3>
+      </a>
+    </div>
+    <div class="bg-white p-4 shadow-md text-center">
+      <a href="#">
+        <img src="액세서리 이미지 링크" alt="액세서리" class="w-full h-40 object-cover mb-2">
+        <h3 class="text-lg font-semibold">액세서리</h3>
+      </a>
     </div>
   </div>
 </section>
 
-<!-- 카테고리 메뉴 -->
-<nav class="bg-blue-900 py-4">
-  <div class="container mx-auto flex justify-between text-white px-20">
-    <a href="#" class="hover:underline">판매등록</a>
-    <a href="#" class="hover:underline">캐릭터 거래</a>
-    <a href="#" class="hover:underline">게임머니 거래</a>
-    <a href="#" class="hover:underline">상품권몰</a>
-    <a href="#" class="hover:underline">마이페이지</a>
-    <a href="#" class="hover:underline">마일리지 충전</a>
-    <a href="#" class="hover:underline">마일리지 출금</a>
+<!-- 추천 상품 섹션 -->
+<section class="container mx-auto py-10">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">추천 상품</h2>
+  <div class="grid grid-cols-5 gap-6">
+    <!-- 각 상품 카드 -->
+    <div class="bg-white p-4 shadow-md">
+      <img src="추천상품 이미지 링크" alt="추천 상품 1" class="w-full h-40 object-cover mb-2">
+      <h3 class="text-lg font-semibold mb-1">상품명 1</h3>
+      <p class="text-gray-700 mb-2">₩가격</p>
+      <a href="#" class="text-blue-500 hover:underline">자세히 보기</a>
+    </div>
+    <div class="bg-white p-4 shadow-md">
+      <img src="추천상품 이미지 링크" alt="추천 상품 2" class="w-full h-40 object-cover mb-2">
+      <h3 class="text-lg font-semibold mb-1">상품명 2</h3>
+      <p class="text-gray-700 mb-2">₩가격</p>
+      <a href="#" class="text-blue-500 hover:underline">자세히 보기</a>
+    </div>
+    <div class="bg-white p-4 shadow-md">
+      <img src="추천상품 이미지 링크" alt="추천 상품 3" class="w-full h-40 object-cover mb-2">
+      <h3 class="text-lg font-semibold mb-1">상품명 3</h3>
+      <p class="text-gray-700 mb-2">₩가격</p>
+      <a href="#" class="text-blue-500 hover:underline">자세히 보기</a>
+    </div>
+    <div class="bg-white p-4 shadow-md">
+      <img src="추천상품 이미지 링크" alt="추천 상품 4" class="w-full h-40 object-cover mb-2">
+      <h3 class="text-lg font-semibold mb-1">상품명 4</h3>
+      <p class="text-gray-700 mb-2">₩가격</p>
+      <a href="#" class="text-blue-500 hover:underline">자세히 보기</a>
+    </div>
+    <div class="bg-white p-4 shadow-md">
+      <img src="추천상품 이미지 링크" alt="추천 상품 4" class="w-full h-40 object-cover mb-2">
+      <h3 class="text-lg font-semibold mb-1">상품명 4</h3>
+      <p class="text-gray-700 mb-2">₩가격</p>
+      <a href="#" class="text-blue-500 hover:underline">자세히 보기</a>
+    </div>
   </div>
-</nav>
+</section>
 
+    <!-- 최근 등록된 상품 섹션 -->
+    <section class="container mx-auto py-10">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">최근 등록된 상품</h2>
+      <ul class="grid grid-cols-5 gap-6">
+        <li th:each="product : ${latestProducts}" class="bg-white p-4 shadow-md">
+          <a th:href="@{/products/detail/{id}(id=${product.id})}">
+            <img th:src="${product.thumbnailFilepath != null ? product.thumbnailFilepath : 'https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2'}" alt="상품 이미지" class="w-full h-40 object-cover mb-2">
+            <h3 class="text-lg font-semibold mb-1" th:text="${product.name}">상품명</h3>
+            <p class="text-gray-700 mb-2">₩<span th:text="${product.price}">가격</span></p>
+          </a>
+        </li>
+        <li th:if="${#lists.isEmpty(latestProducts)}">
+          <p>최근 등록된 상품이 없습니다.</p>
+        </li>
+      </ul>
+    </section>
+
+  </div> <!-- pageContent 끝 -->
+</div>
 </body>
 </html>
