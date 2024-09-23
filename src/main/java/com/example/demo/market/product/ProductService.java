@@ -30,7 +30,7 @@ public class ProductService {
 
     public void createProduct(String name, String description, int price, int categoryNumber,
                               MultipartFile thumbnail, List<MultipartFile> imageFiles,
-                              Member member) throws IOException {
+                              Member member, boolean isRecommended) throws IOException {
 
         // Product 객체 생성
         Product product = new Product();
@@ -39,6 +39,7 @@ public class ProductService {
         product.setPrice(price);
         product.setCategoryNumber(categoryNumber);
         product.setMember(member);
+        product.setRecommended(isRecommended);  // 추천 상품 여부 설정
 
         // 썸네일 이미지 처리 (무조건 입력)
         if (thumbnail != null && !thumbnail.isEmpty()) {
@@ -99,6 +100,9 @@ public class ProductService {
         return savedFilename;
     }
 
+    public List<Product> getProductsByCategory(Integer categoryNumber) {
+        return productRepository.findByCategoryNumber(categoryNumber);
+    }
 
     public String getCategoryName(int categoryNumber) {
         switch (categoryNumber) {
@@ -127,13 +131,17 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    // 일반 상품만 조회 (추천 상품 제외)
     public List<Product> findLatestProducts() {
-        Pageable pageable = PageRequest.of(0, 5);  // 첫 페이지, 5개의 항목
-        return productRepository.findTop5ByOrderByCreateDateDesc(pageable);
+        return productRepository.findTop5ByIsRecommendedFalseOrderByCreateDateDesc();
     }
 
-    public List<Product> getProductsByCategoryNumber(int categoryNumber) {
-        return productRepository.findByCategoryNumber(categoryNumber);
+    // 추천 상품만 조회
+    public List<Product> findRecommendedProducts() {
+        return productRepository.findByIsRecommendedTrue();
     }
 
+    public List<Product> searchProductsByName(String keyword) {
+        return productRepository.findByNameContainingIgnoreCase(keyword);
+    }
 }

@@ -30,27 +30,30 @@
       <a sec:authorize="isAuthenticated()" href="/mileage/charge" class="hover:text-blue-500">마일리지충전</a>
       <a sec:authorize="isAuthenticated()" href="/mileage/withdraw" class="hover:text-blue-500">마일리지출금</a>
       <a sec:authorize="isAuthenticated()" href="/chat" class="hover:text-blue-500">채팅내역</a>
-      <a sec:authorize="isAuthenticated()" href="/logout" class="border px-2 py-1 rounded hover:bg-gray-200">로그아웃</a>
+      <a sec:authorize="isAuthenticated()" href="/member/logout" class="border px-2 py-1 rounded hover:bg-gray-200">로그아웃</a>
     </div>
   </div>
+
+  <!-- 로고 및 검색 바 -->
+  <section class="bg-white py-4">
+    <div class="container mx-auto flex items-center justify-between">
+      <div class="flex-shrink-0">
+        <a href="/market/main"><img src="https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2" alt="로고" class="w-40"></a>
+      </div>
+      <form action="/market/search" method="GET" class="flex items-center w-full max-w-lg">
+        <input type="text" name="keyword" class="border border-blue-500 w-full py-2 px-4"
+               placeholder="검색"
+               onfocus="this.placeholder = '';"
+               onblur="if(this.value === '') { this.placeholder = '검색'; }">
+        <button type="submit" class="bg-white border border-blue-500 text-blue-500 px-4 py-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.42-1.42l4.27 4.27a1 1 0 01-1.42 1.42l-4.27-4.27zM8 14a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </form>
+    </div>
+  </section>
+
 </header>
-
-<!-- 로고 및 검색 바 -->
-<section class="bg-white py-4">
-  <div class="container mx-auto flex items-center justify-between">
-    <div class="flex-shrink-0">
-      <a href="/market/main"><img src="https://github.com/user-attachments/assets/415b30b9-749d-47bd-b20d-e00b28414cc2" alt="로고" class="w-40"></a>
-    </div>
-    <div class="flex items-center w-full max-w-lg">
-      <input type="text" class="border border-blue-500 w-full py-2 px-4" placeholder="검색">
-      <button class="bg-white border border-blue-500 text-blue-500 px-4 py-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 111.42-1.42l4.27 4.27a1 1 0 01-1.42 1.42l-4.27-4.27zM8 14a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd" />
-        </svg>
-      </button>
-    </div>
-  </div>
-</section>
-
 </body>
 </html>

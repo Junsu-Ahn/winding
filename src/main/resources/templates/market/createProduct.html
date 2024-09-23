@@ -53,7 +53,11 @@
         <option value="5">액세서리</option>
       </select>
     </div>
-
+    <!-- 관리자 권한만 추천 상품 등록을 허용 -->
+    <div class="mb-4" sec:authorize="hasRole('ROLE_ADMIN')">
+        <label for="isRecommended" class="block text-gray-700">추천 상품으로 등록</label>
+        <input type="checkbox" id="isRecommended" name="isRecommended">
+    </div>
     <!-- 등록 버튼 -->
     <div class="mt-6">
       <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">상품 등록</button>

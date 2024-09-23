@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -38,29 +39,17 @@ public class ProductController {
 
     @GetMapping("/main")
     public String mainPage(Model model) {
-        // 로그인한 사용자 정보가 있으면 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 최근 등록된 일반 상품만 조회
+        List<Product> latestProducts = productService.findLatestProducts();
 
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            // 사용자 정보 가져오기
-            String username = authentication.getName();
-            Optional<Member> memberOptional = memberService.findByUsername(username);  // 서비스에서 사용자 엔티티 조회
-            if (memberOptional.isPresent()) {
-                model.addAttribute("member", memberOptional.get());  // 사용자 엔티티를 모델에 전달
-            } else {
-                // 예외 처리 또는 기본값 설정
-                model.addAttribute("member", new Member());  // 기본값 설정
-            }
-        }
+        // 추천 상품만 조회
+        List<Product> recommendedProducts = productService.findRecommendedProducts();
 
-        // 최신 등록된 상품 목록 가져오기
-        List<Product> productList = productService.findLatestProducts();  // 서비스에서 최신 상품 리스트 조회
-        if (productList == null) {
-            productList = new ArrayList<>();  // productList가 null일 경우 빈 리스트로 초기화
-        }
-        model.addAttribute("latestProducts", productList);  // 상품 리스트를 모델에 전달
+        // 모델에 추가
+        model.addAttribute("latestProducts", latestProducts);
+        model.addAttribute("recommendedProducts", recommendedProducts);
 
-        return "market/market";  // Thymeleaf 템플릿 파일 이름
+        return "market/market";
     }
 
     @GetMapping("/list")
@@ -101,7 +90,8 @@ public class ProductController {
             @RequestParam("description") String description,
             @RequestParam("category") int categoryNumber,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,  // 이미지 리스트 추가
+            @RequestParam(value = "isRecommended", required = false) boolean isRecommended,
             @AuthenticationPrincipal UserDetails userDetails,
             Model model) throws IOException {
 
@@ -110,26 +100,47 @@ public class ProductController {
             Member member = memberService.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Member not found"));
 
+            // 관리자인 경우에만 추천 상품으로 설정 가능
+            if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+                isRecommended = false;  // 일반 사용자는 추천 상품 등록 불가
+            }
+
             // 상품 등록 처리
-            productService.createProduct(name, description, price, categoryNumber, thumbnail, images, member);
+            productService.createProduct(name, description, price, categoryNumber, thumbnail, images, member, isRecommended);
 
             return "redirect:/market/main";  // 상품 리스트로 리다이렉트
 
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("errorMessage", "상품 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
-            return "market/createProduct";  // 오류 발생 시 등록 페이지로 이동
+            return "market/createProduct";
         }
     }
 
 
     @GetMapping("/category/{categoryNumber}")
-    public String getCategoryProducts(@PathVariable("categoryNumber") int categoryNumber, Model model) {
-        List<Product> products = productService.getProductsByCategoryNumber(categoryNumber);
-        model.addAttribute("productList", products);
-        model.addAttribute("categoryNumber", categoryNumber); // 선택된 카테고리 번호를 모델에 추가
-        return "market/list";
+    public String getCategoryProducts(@PathVariable("categoryNumber") Integer categoryNumber, Model model) {
+        // 서비스에서 카테고리별 상품 리스트 가져오기
+        List<Product> productList = productService.getProductsByCategory(categoryNumber);
+
+        // 상품이 없으면 빈 리스트를 초기화하여 NullPointerException 방지
+        if (productList == null) {
+            productList = new ArrayList<>();
+        }
+
+        // 모델에 카테고리 번호와 상품 리스트 추가
+        model.addAttribute("productList", productList);
+        model.addAttribute("categoryNumber", categoryNumber);
+
+        return "market/list"; // list.html로 이동
     }
 
+    @GetMapping("/search")
+    public String searchProducts(@RequestParam("keyword") String keyword, Model model) {
+        List<Product> productList = productService.searchProductsByName(keyword);
+        model.addAttribute("productList", productList);
+        model.addAttribute("keyword", keyword); // 검색어를 다시 전달해 UI에 표시
+        return "market/list"; // 검색 결과를 list.html에서 출력
+    }
 
 }

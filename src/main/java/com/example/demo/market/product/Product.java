@@ -28,6 +28,8 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
+    private boolean isRecommended = false;  // 기본값 false
+
     public void addImage(ProductImage image) {
         this.images.add(image);
         image.setProduct(this);  // 양방향 연관관계 설정

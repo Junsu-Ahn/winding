@@ -7,9 +7,15 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    List<Product> findTop5ByOrderByCreateDateDesc();
-    // 또는 페이징 처리가 필요한 경우
-    List<Product> findTop5ByOrderByCreateDateDesc(Pageable pageable);
 
-    List<Product> findByCategoryNumber(int categoryNumber);
+
+    List<Product> findByCategoryNumber(Integer categoryNumber);
+
+    // 추천 상품만 조회하는 메서드
+    List<Product> findByIsRecommendedTrue();
+
+    // 추천 상품을 제외한 최근 등록된 5개의 상품만 조회
+    List<Product> findTop5ByIsRecommendedFalseOrderByCreateDateDesc();
+
+    List<Product> findByNameContainingIgnoreCase(String keyword);
 }
