@@ -6,21 +6,34 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
-public class Product extends BaseEntity{
+public class Product extends BaseEntity {
 
     private String name;
     private int price;
     private int categoryNumber;
-    private String description; // description 필드 추가
-    private String thumbnailFilepath;
+    private String description;
+    private String thumbnailFilename;  // 썸네일 파일 이름 추가
+    private String thumbnailFilepath;  // 썸네일 파일 경로
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false) // 외래 키 컬럼을 명확히 설정
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
 
-    // Getter and Setter methods
+    public void addImage(ProductImage image) {
+        this.images.add(image);
+        image.setProduct(this);  // 양방향 연관관계 설정
+    }
+
+    public void clearImages() {
+        this.images.clear();
+    }
 }

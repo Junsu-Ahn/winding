@@ -99,7 +99,7 @@ public class ProductController {
             @RequestParam("name") String name,
             @RequestParam("price") int price,
             @RequestParam("description") String description,
-            @RequestParam("category") int categoryNumber,  // 카테고리 번호 입력받기
+            @RequestParam("category") int categoryNumber,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal UserDetails userDetails,
@@ -110,56 +110,25 @@ public class ProductController {
             Member member = memberService.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Member not found"));
 
-            // 썸네일 및 이미지 처리 로직
-            String thumbnailPath = null;
-            if (thumbnail != null && !thumbnail.isEmpty()) {
-                thumbnailPath = saveFile(thumbnail, fileDirPath);
-            }
+            // 상품 등록 처리
+            productService.createProduct(name, description, price, categoryNumber, thumbnail, images, member);
 
-            // 상품 생성 및 저장
-            Product product = new Product();
-            product.setName(name);
-            product.setPrice(price);
-            product.setDescription(description);
-            product.setCategoryNumber(categoryNumber);  // 카테고리 번호 저장
-            product.setThumbnailFilepath(thumbnailPath);
-            product.setMember(member);  // Member 객체 설정
-
-            productService.saveProduct(product);
-
-            return "redirect:/market/list"; // 상품 리스트로 리다이렉트
+            return "redirect:/market/main";  // 상품 리스트로 리다이렉트
 
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("errorMessage", "상품 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
-            return "market/createProduct"; // 오류 발생 시 등록 페이지로 이동
+            return "market/createProduct";  // 오류 발생 시 등록 페이지로 이동
         }
     }
 
 
-    private String saveFile(MultipartFile file, String uploadDir) throws IOException {
-        // 원본 파일명과 확장자를 추출
-        String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-
-        // UUID로 고유한 파일명 생성
-        String uuid = UUID.randomUUID().toString();
-        String savedFilename = uuid + extension;
-
-        // 저장 경로 설정
-        Path filePath = Paths.get(uploadDir, savedFilename);
-        File dest = filePath.toFile();
-
-        // 부모 디렉터리가 없을 경우 디렉터리 생성
-        if (!dest.getParentFile().exists()) {
-            dest.getParentFile().mkdirs();
-        }
-
-        // 파일을 지정된 경로에 저장
-        file.transferTo(dest);
-
-        // 저장된 파일명을 반환
-        return savedFilename;
+    @GetMapping("/category/{categoryNumber}")
+    public String getCategoryProducts(@PathVariable("categoryNumber") int categoryNumber, Model model) {
+        List<Product> products = productService.getProductsByCategoryNumber(categoryNumber);
+        model.addAttribute("productList", products);
+        model.addAttribute("categoryNumber", categoryNumber); // 선택된 카테고리 번호를 모델에 추가
+        return "market/list";
     }
 
 

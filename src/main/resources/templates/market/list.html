@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html layout:decorate="~{/market/layout}">
-<section layout:fragment="content" class="section-prod-list">
-  <div class="container">
-    <h1 class="t-text-[1.5rem] t-font-bold">강의 리스트</h1>
-    <ul class="t-grid t-grid-cols-1 sm:t-grid-cols-2 md:t-grid-cols-3 lg:t-grid-cols-4 t-gap-[20px] t-mt-3">
-      <li th:each="product, loop : ${productList}" class="t-flex t-flex-col">
-        <a href="#" data-before="VIEW MORE">
-          <img class="t-block t-w-full" src="https://i.imgur.com/PVsCFy1.png" alt="">
-        </a>
-        <a href="#" th:text="${product.name}" class="t-text-center t-mt-2"></a>
-        <a href="#" th:text="${product.price}+원" class="t-text-center t-mt-2"></a>
-      </li>
-    </ul>
+<section layout:fragment="content" class="container mx-auto py-10">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6" th:text="${categoryNumber == null ? '전체 상품' : '카테고리 ' + categoryNumber}"></h2>
+  <div class="grid grid-cols-5 gap-4">
+    <div class="bg-white p-4 shadow-md text-center" th:each="product : ${productList}">
+      <a th:href="@{/market/detail/{id}(id=${product.id})}">
+        <img th:src="${product.thumbnailFilepath}" alt="product image" class="w-full h-40 object-cover mb-2">
+        <h3 class="text-lg font-semibold" th:text="${product.name}"></h3>
+        <p th:text="'가격: ' + ${product.price} + '원'"></p>
+      </a>
+    </div>
   </div>
 </section>
 </html>
