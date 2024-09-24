@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.text.DecimalFormat;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -45,9 +43,30 @@ public class ProductController {
         // 추천 상품만 조회
         List<Product> recommendedProducts = productService.findRecommendedProducts();
 
+        // 가격을 포맷팅해서 저장할 맵을 준비
+        Map<Long, String> formattedPrices = new HashMap<>(); // key는 product의 ID, value는 포맷된 가격
+
+        // 포맷터 생성
+        DecimalFormat formatter = new DecimalFormat("###,###");
+
+        // 각 상품의 가격을 포맷하고 맵에 저장
+        for (Product product : latestProducts) {
+            String formattedPrice = formatter.format(product.getPrice());
+            formattedPrices.put(product.getId(), formattedPrice);
+            System.out.println("Product price: " + product.getPrice() + " -> Formatted: " + formattedPrice);
+        }
+
+        // 추천 상품 가격 포맷팅
+        for (Product product : recommendedProducts) {
+            String formattedPrice = formatter.format(product.getPrice());
+            formattedPrices.put(product.getId(), formattedPrice);
+            System.out.println("Recommended Product price: " + product.getPrice() + " -> Formatted: " + formattedPrice);
+        }
+
         // 모델에 추가
         model.addAttribute("latestProducts", latestProducts);
         model.addAttribute("recommendedProducts", recommendedProducts);
+        model.addAttribute("formattedPrices", formattedPrices); // 포맷된 가격을 모델에 추가
 
         return "market/market";
     }
