@@ -28,14 +28,14 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public void createProduct(String name, String description, int price, int categoryNumber,
+    public void createProduct(String name, List<String> descriptions, int price, int categoryNumber,
                               MultipartFile thumbnail, List<MultipartFile> imageFiles,
                               Member member, boolean isRecommended) throws IOException {
 
         // Product 객체 생성
         Product product = new Product();
         product.setName(name);
-        product.setDescription(description);
+        product.setDescriptions(descriptions);
         product.setPrice(price);
         product.setCategoryNumber(categoryNumber);
         product.setMember(member);
@@ -67,11 +67,10 @@ public class ProductService {
             }
         }
 
-        // Product 저장
-        productRepository.save(product);
+        System.out.println("썸네일 경로: " + product.getThumbnailFilepath());
+        System.out.println("추가 이미지 경로: " + product.getImages());
+        productRepository.save(product);  // 다시 저장하여 이미지 업데이트
     }
-
-
 
     // 이미지 파일을 저장하는 유틸리티 함수
     private String saveImageFile(MultipartFile file) throws IOException {
@@ -125,6 +124,7 @@ public class ProductService {
         String categoryName = getCategoryName(product.getCategoryNumber());
         model.addAttribute("categoryName", categoryName);
         model.addAttribute("product", product);
+
     }
 
     public void saveProduct(Product product) {
@@ -143,5 +143,9 @@ public class ProductService {
 
     public List<Product> searchProductsByName(String keyword) {
         return productRepository.findByNameContainingIgnoreCase(keyword);
+    }
+
+    public Product getProductById(Long id) {
+        return productRepository.findById(id).orElse(null);
     }
 }

@@ -1,21 +1,89 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>상품 등록</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 등록</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // 썸네일 이미지 미리보기 기능
+         function previewThumbnail(event) {
+           const thumbnailPreview = document.getElementById('thumbnail-preview');
+           const file = event.target.files[0]; // 파일 객체 가져오기
+           if (file) { // 파일이 선택되었는지 확인
+             thumbnailPreview.src = URL.createObjectURL(file); // 파일 URL 생성
+             thumbnailPreview.classList.remove('hidden'); // 숨겨진 이미지 요소를 보이게 하기
+             thumbnailPreview.onload = function () {
+               URL.revokeObjectURL(thumbnailPreview.src); // 메모리 해제
+             }
+           } else {
+             thumbnailPreview.src = "#"; // 파일이 없을 때 기본값 설정
+             thumbnailPreview.classList.add('hidden'); // 파일이 없으면 미리보기를 다시 숨기기
+           }
+         }
+
+         // 추가 이미지 미리보기 기능
+         function previewImage(event, previewId) {
+           const imagePreview = document.getElementById(previewId);
+           const file = event.target.files[0]; // 파일 객체 가져오기
+           if (file) { // 파일이 선택되었는지 확인
+             imagePreview.src = URL.createObjectURL(file); // 파일 URL 생성
+             imagePreview.classList.remove('hidden'); // 숨겨진 이미지 요소를 보이게 하기
+             imagePreview.onload = function () {
+               URL.revokeObjectURL(imagePreview.src); // 메모리 해제
+             }
+           } else {
+             imagePreview.src = "#"; // 파일이 없을 때 기본값 설정
+             imagePreview.classList.add('hidden'); // 파일이 없으면 미리보기를 다시 숨기기
+           }
+         }
+
+         // 추가 이미지 설명 단계 추가
+         document.addEventListener('DOMContentLoaded', function () {
+           const addStepBtn = document.getElementById('add-step-btn');
+           const stepsContainer = document.getElementById('steps-container');
+           let stepCount = 1;
+
+           addStepBtn.addEventListener('click', function () {
+             stepCount++;
+             const newStep = `
+               <div class="mb-4" id="step-${stepCount}">
+                 <h3 class="text-lg font-semibold mb-2">사진 및 설명 추가</h3>
+                 <div class="flex items-center">
+                   <div class="w-1/2">
+                     <textarea id="description-${stepCount}" name="descriptions[]" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요"></textarea>
+                   </div>
+                   <div class="ml-4">
+                     <label for="image-${stepCount}" class="block text-gray-700">이미지</label>
+                     <input type="file" id="image-${stepCount}" name="images[]" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" onchange="previewImage(event, 'image-preview-${stepCount}')">
+                     <img id="image-preview-${stepCount}" src="#" alt="이미지 미리보기" class="mt-2 hidden w-32 h-32 object-cover">
+                   </div>
+                 </div>
+                 <button type="button" class="text-red-500 mt-2" onclick="removeStep(${stepCount})">삭제</button>
+               </div>
+             `;
+             stepsContainer.insertAdjacentHTML('beforeend', newStep);
+           });
+         });
+
+         // 단계 삭제 함수
+         function removeStep(stepNum) {
+           const step = document.getElementById(`step-${stepNum}`);
+           step.remove();
+         }
+    </script>
 </head>
 <body>
 <div th:insert="~{market/layout :: layout}"></div>
-  <!-- 상품 등록 폼 -->
+
+<!-- 상품 등록 폼 -->
 <form action="/market/create" method="POST" enctype="multipart/form-data" class="bg-white p-6 shadow-md rounded">
 
-<!-- 상품명 입력 -->
+    <!-- 상품명 입력 -->
     <div class="mb-4">
-      <label for="name" class="block text-gray-700">상품명</label>
-      <input type="text" id="name" name="name" class="w-full border border-gray-300 p-2 rounded mt-1" placeholder="상품명을 입력하세요" required>
+        <label for="name" class="block text-gray-700">상품명</label>
+        <input type="text" id="name" name="name" class="w-full border border-gray-300 p-2 rounded mt-1" placeholder="상품명을 입력하세요" required>
     </div>
 
     <!-- 가격 입력 -->
@@ -24,45 +92,52 @@
         <input type="number" id="price" name="price" class="w-full border border-gray-300 p-2 rounded mt-1" placeholder="가격을 입력하세요" required>
     </div>
 
-    <!-- 설명 입력 -->
-    <div class="mb-4">
-      <label for="description" class="block text-gray-700">상품 설명</label>
-      <textarea id="description" name="description" class="w-full border border-gray-300 p-2 rounded mt-1" rows="4" placeholder="상품 설명을 입력하세요" required></textarea>
-    </div>
-
-    <!-- 이미지 업로드 -->
-    <div class="mb-4">
-        <label for="thumbnail" class="block text-gray-700">썸네일 이미지</label>
-        <input type="file" id="thumbnail" name="thumbnail" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" required>
-    </div>
-
-    <div class="mb-4">
-        <label for="images" class="block text-gray-700">추가 이미지 (선택 사항)</label>
-        <input type="file" id="images" name="images" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" multiple>
-    </div>
-
     <!-- 카테고리 선택 -->
     <div class="mb-4">
-      <label for="category" class="block text-gray-700">카테고리</label>
-      <select id="category" name="category" class="w-full border border-gray-300 p-2 rounded mt-1" required>
-        <option value="" disabled selected>카테고리를 선택하세요</option>
-        <option value="1">세차용품</option>
-        <option value="2">엔진오일</option>
-        <option value="3">워셔액</option>
-        <option value="4">차량 관리용품</option>
-        <option value="5">액세서리</option>
-      </select>
+        <label for="category" class="block text-gray-700">카테고리</label>
+        <select id="category" name="category" class="w-full border border-gray-300 p-2 rounded mt-1" required>
+            <option value="" disabled selected>카테고리를 선택하세요</option>
+            <option value="1">세차용품</option>
+            <option value="2">엔진오일</option>
+            <option value="3">워셔액</option>
+            <option value="4">차량 관리용품</option>
+            <option value="5">액세서리</option>
+        </select>
     </div>
-    <!-- 관리자 권한만 추천 상품 등록을 허용 -->
-    <div class="mb-4" sec:authorize="hasRole('ROLE_ADMIN')">
-        <label for="isRecommended" class="block text-gray-700">추천 상품으로 등록</label>
-        <input type="checkbox" id="isRecommended" name="isRecommended">
+
+    <!-- 썸네일 이미지 업로드 -->
+    <div class="mb-4">
+        <label for="thumbnail" class="block text-gray-700">썸네일 이미지</label>
+        <input type="file" id="thumbnail" name="thumbnail" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" onchange="previewThumbnail(event)" required>
+        <img id="thumbnail-preview" src="#" alt="썸네일 미리보기" class="mt-2 hidden w-32 h-32 object-cover">
     </div>
+
+    <!-- 단계 추가 -->
+    <div id="steps-container">
+        <div class="mb-4" id="step-1">
+            <h3 class="text-lg font-semibold mb-2">사진 및 설명 추가</h3>
+            <div class="flex items-center">
+                <div class="w-1/2">
+                    <textarea id="description-1" name="descriptions[]" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요"></textarea>
+                </div>
+                <div class="ml-4">
+                    <label for="image-1" class="block text-gray-700">이미지</label>
+                    <input type="file" id="image-1" name="images[]" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" multiple>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 단계 추가 버튼 -->
+    <div class="mb-6 flex justify-center">
+        <button type="button" id="add-step-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">+ 사진 및 설명 추가</button>
+    </div>
+
     <!-- 등록 버튼 -->
     <div class="mt-6">
-      <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">상품 등록</button>
+        <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600">상품 등록</button>
     </div>
-  </form>
-
+</form>
 </body>
 </html>

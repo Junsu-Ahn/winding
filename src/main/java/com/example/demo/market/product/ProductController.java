@@ -80,6 +80,12 @@ public class ProductController {
 
     @GetMapping("/detail/{id}")
     public String detail(@PathVariable("id") Long id, Model model) {
+        Product product = productService.getProductById(id);
+        if (product == null) {
+            return "redirect:/market/list";  // 상품이 없을 경우 목록으로 리다이렉트
+        }
+
+        productService.displayProductDetails(product, model);
 
         return "market/detail";
     }
@@ -106,10 +112,10 @@ public class ProductController {
     public String createProduct(
             @RequestParam("name") String name,
             @RequestParam("price") int price,
-            @RequestParam("description") String description,
+            @RequestParam("descriptions") List<String> descriptions, // 설명 리스트 받기
             @RequestParam("category") int categoryNumber,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,  // 이미지 리스트 추가
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "isRecommended", required = false) boolean isRecommended,
             @AuthenticationPrincipal UserDetails userDetails,
             Model model) throws IOException {
@@ -125,7 +131,7 @@ public class ProductController {
             }
 
             // 상품 등록 처리
-            productService.createProduct(name, description, price, categoryNumber, thumbnail, images, member, isRecommended);
+            productService.createProduct(name, descriptions, price, categoryNumber, thumbnail, images, member, isRecommended);
 
             return "redirect:/market/main";  // 상품 리스트로 리다이렉트
 
