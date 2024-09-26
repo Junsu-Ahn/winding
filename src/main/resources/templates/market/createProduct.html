@@ -8,77 +8,137 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // 썸네일 이미지 미리보기 기능
-         function previewThumbnail(event) {
-           const thumbnailPreview = document.getElementById('thumbnail-preview');
-           const file = event.target.files[0]; // 파일 객체 가져오기
-           if (file) { // 파일이 선택되었는지 확인
-             thumbnailPreview.src = URL.createObjectURL(file); // 파일 URL 생성
-             thumbnailPreview.classList.remove('hidden'); // 숨겨진 이미지 요소를 보이게 하기
-             thumbnailPreview.onload = function () {
-               URL.revokeObjectURL(thumbnailPreview.src); // 메모리 해제
-             }
-           } else {
-             thumbnailPreview.src = "#"; // 파일이 없을 때 기본값 설정
-             thumbnailPreview.classList.add('hidden'); // 파일이 없으면 미리보기를 다시 숨기기
-           }
-         }
+        function previewThumbnail(event) {
+            const thumbnailPreview = document.getElementById('thumbnail-preview');
+            const file = event.target.files[0];
+            if (file) {
+                thumbnailPreview.src = URL.createObjectURL(file);
+                thumbnailPreview.classList.remove('hidden');
+                thumbnailPreview.onload = function () {
+                    URL.revokeObjectURL(thumbnailPreview.src);
+                }
+            } else {
+                thumbnailPreview.src = "#";
+                thumbnailPreview.classList.add('hidden');
+            }
+        }
 
-         // 추가 이미지 미리보기 기능
-         function previewImage(event, previewId) {
-           const imagePreview = document.getElementById(previewId);
-           const file = event.target.files[0]; // 파일 객체 가져오기
-           if (file) { // 파일이 선택되었는지 확인
-             imagePreview.src = URL.createObjectURL(file); // 파일 URL 생성
-             imagePreview.classList.remove('hidden'); // 숨겨진 이미지 요소를 보이게 하기
-             imagePreview.onload = function () {
-               URL.revokeObjectURL(imagePreview.src); // 메모리 해제
-             }
-           } else {
-             imagePreview.src = "#"; // 파일이 없을 때 기본값 설정
-             imagePreview.classList.add('hidden'); // 파일이 없으면 미리보기를 다시 숨기기
-           }
-         }
+        // 여러 이미지를 필드 아래 직접 미리보기
+        function previewMultipleImages(event, inputElement) {
+            const files = event.target.files;
 
-         // 추가 이미지 설명 단계 추가
-         document.addEventListener('DOMContentLoaded', function () {
-           const addStepBtn = document.getElementById('add-step-btn');
-           const stepsContainer = document.getElementById('steps-container');
-           let stepCount = 1;
+            // 기존 이미지 미리보기 초기화
+            while (inputElement.nextSibling && inputElement.nextSibling.tagName === 'IMG') {
+                inputElement.parentNode.removeChild(inputElement.nextSibling);
+            }
 
-           addStepBtn.addEventListener('click', function () {
-             stepCount++;
-             const newStep = `
-               <div class="mb-4" id="step-${stepCount}">
-                 <h3 class="text-lg font-semibold mb-2">사진 및 설명 추가</h3>
-                 <div class="flex items-center">
-                   <div class="w-1/2">
-                     <textarea id="description-${stepCount}" name="descriptions[]" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요"></textarea>
-                   </div>
-                   <div class="ml-4">
-                     <label for="image-${stepCount}" class="block text-gray-700">이미지</label>
-                     <input type="file" id="image-${stepCount}" name="images[]" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" onchange="previewImage(event, 'image-preview-${stepCount}')">
-                     <img id="image-preview-${stepCount}" src="#" alt="이미지 미리보기" class="mt-2 hidden w-32 h-32 object-cover">
-                   </div>
-                 </div>
-                 <button type="button" class="text-red-500 mt-2" onclick="removeStep(${stepCount})">삭제</button>
-               </div>
-             `;
-             stepsContainer.insertAdjacentHTML('beforeend', newStep);
-           });
-         });
+            // 선택된 파일들에 대한 미리보기 추가
+            if (files) {
+                Array.from(files).forEach(file => {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.classList.add('w-32', 'h-32', 'object-cover', 'mr-2', 'mb-2');
 
-         // 단계 삭제 함수
-         function removeStep(stepNum) {
-           const step = document.getElementById(`step-${stepNum}`);
-           step.remove();
-         }
+                    // 이미지 로드 완료 후 URL 객체 해제
+                    img.onload = function () {
+                        URL.revokeObjectURL(img.src);
+                    };
+
+                    // 파일 필드 아래에 이미지 추가
+                    inputElement.parentNode.appendChild(img);
+                });
+            }
+        }
+
+        // 추가 이미지 및 설명 단계 추가
+        document.addEventListener('DOMContentLoaded', function () {
+            const addStepBtn = document.getElementById('add-step-btn');
+            const stepsContainer = document.getElementById('steps-container');
+            let stepCount = 1;
+
+            addStepBtn.addEventListener('click', function () {
+                stepCount++;
+                const newStep = `
+                  <div class="mb-4" id="step-${stepCount}">
+                    <h3 class="text-lg font-semibold mb-2">사진 및 설명 추가</h3>
+                    <div class="flex items-center">
+                      <div class="w-1/2">
+                        <textarea id="description-${stepCount}" name="descriptions[]" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요"></textarea>
+                      </div>
+                      <div class="ml-4">
+                        <label for="image-${stepCount}" class="block text-gray-700">이미지</label>
+                        <input type="file" id="image-${stepCount}" name="images" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" multiple onchange="previewMultipleImages(event, this)">
+                      </div>
+                    </div>
+                    <button type="button" class="text-red-500 mt-2" onclick="removeStep(${stepCount})">삭제</button>
+                  </div>
+                `;
+                stepsContainer.insertAdjacentHTML('beforeend', newStep);
+            });
+        });
+
+        // 단계 삭제 함수
+        function removeStep(stepNum) {
+            const step = document.getElementById(`step-${stepNum}`);
+            step.remove();
+        }
+
+// 폼 제출 전에 모든 폼 데이터를 FormData에 묶어 제출
+function prepareFormForSubmission() {
+    const formData = new FormData();
+
+    // 썸네일 추가
+    const thumbnailInput = document.getElementById('thumbnail');
+    if (thumbnailInput.files.length > 0) {
+        formData.append('thumbnail', thumbnailInput.files[0]);
+    }
+
+    // 상품명, 가격, 카테고리 등 일반 필드 추가
+    formData.append('name', document.getElementById('name').value);
+    formData.append('price', document.getElementById('price').value);
+    formData.append('category', document.getElementById('category').value);
+
+    // 설명 필드 추가 (여러 설명이 있을 수 있음)
+    const descriptions = document.querySelectorAll('textarea[name="descriptions[]"]');
+    descriptions.forEach((desc) => {
+        formData.append('descriptions', desc.value);  // 배열 없이 'descriptions'로 추가
+    });
+
+    // 추가 이미지 필드 추가 (여러 이미지)
+    const imageInputs = document.querySelectorAll('input[name="images"]');
+    imageInputs.forEach((input) => {
+        if (input.files.length > 0) {
+            formData.append('images', input.files[0]);  // 배열 없이 'images'로 추가
+        }
+    });
+
+    return formData;
+}
+
+// 폼 제출 시 FormData를 만들어 전송
+function handleSubmit(event) {
+    event.preventDefault();  // 기본 제출 방지
+    const formData = prepareFormForSubmission();
+
+    // AJAX 또는 Fetch API로 전송
+    fetch('/market/create', {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            window.location.href = '/market/main';  // 성공 시 리다이렉트
+        } else {
+            response.text().then(text => console.error('서버 오류:', text));
+        }
+    }).catch(error => console.error('Error:', error));
+}
     </script>
 </head>
 <body>
 <div th:insert="~{market/layout :: layout}"></div>
 
 <!-- 상품 등록 폼 -->
-<form action="/market/create" method="POST" enctype="multipart/form-data" class="bg-white p-6 shadow-md rounded">
+<form onsubmit="handleSubmit(event)" class="bg-white p-6 shadow-md rounded">
 
     <!-- 상품명 입력 -->
     <div class="mb-4">
@@ -112,7 +172,7 @@
         <img id="thumbnail-preview" src="#" alt="썸네일 미리보기" class="mt-2 hidden w-32 h-32 object-cover">
     </div>
 
-    <!-- 단계 추가 -->
+    <!-- 추가 이미지 업로드 -->
     <div id="steps-container">
         <div class="mb-4" id="step-1">
             <h3 class="text-lg font-semibold mb-2">사진 및 설명 추가</h3>
@@ -121,13 +181,13 @@
                     <textarea id="description-1" name="descriptions[]" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요"></textarea>
                 </div>
                 <div class="ml-4">
+                    <!-- 추가 이미지 업로드 -->
                     <label for="image-1" class="block text-gray-700">이미지</label>
-                    <input type="file" id="image-1" name="images[]" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" multiple>
+                    <input type="file" id="image-1" name="images" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" multiple onchange="previewMultipleImages(event, this)">
                 </div>
             </div>
         </div>
     </div>
-
 
     <!-- 단계 추가 버튼 -->
     <div class="mb-6 flex justify-center">

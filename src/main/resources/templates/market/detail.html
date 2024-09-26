@@ -13,6 +13,7 @@
       const plusBtn = document.getElementById('plus-btn');
       const quantityInput = document.getElementById('quantity-input');
       const totalPriceEl = document.getElementById('total-price');
+      const quantityTextEl = document.getElementById('quantity-text'); // 총 수량 요소
       const productPrice = parseInt(totalPriceEl.dataset.price.replace(/,/g, ''));  // 상품 가격을 숫자로 변환, 천단위 콤마 제거
 
       // 총 상품 금액 업데이트 함수
@@ -20,6 +21,7 @@
         const quantity = parseInt(quantityInput.value);
         const totalPrice = productPrice * quantity;
         totalPriceEl.textContent = totalPrice.toLocaleString() + '₩';  // 천단위 콤마 추가
+        quantityTextEl.textContent = quantity;  // 총 수량도 업데이트
       }
 
       // 수량 감소 버튼 클릭 이벤트
@@ -42,17 +44,6 @@
       updateTotalPrice();
     });
 
-    // JavaScript로 이미지 변경 기능 추가
-    document.addEventListener('DOMContentLoaded', function () {
-      const mainImage = document.getElementById('main-image');
-      const thumbnailImages = document.querySelectorAll('.thumbnail-image');
-
-      thumbnailImages.forEach((thumbnail) => {
-        thumbnail.addEventListener('mouseenter', function () {
-          mainImage.src = thumbnail.src;  // 마우스가 썸네일에 올라가면 메인 이미지 변경
-        });
-      });
-    });
   </script>
 </head>
 <body>
@@ -69,16 +60,11 @@
 <!-- 상품 상세 정보 컨테이너 -->
 <div class="container mx-auto px-6 lg:px-32 py-10 bg-white shadow-md rounded-lg">
   <div class="flex flex-wrap">
-    <!-- 왼쪽: 상품 이미지 -->
+    <!-- 왼쪽: 상품 이미지 (썸네일만 출력) -->
     <div class="w-full lg:w-1/2">
       <div class="border border-gray-200 p-4">
-        <!-- 상품의 메인 이미지 -->
+        <!-- 상품의 메인 이미지 (썸네일) -->
         <img id="main-image" th:src="@{${product.thumbnailFilepath}}" alt="상품 이미지" class="w-full mb-4">
-
-        <!-- 썸네일 이미지들 (상품의 추가 이미지) -->
-        <div class="flex space-x-2">
-          <img th:each="image : ${product.images}" th:src="@{${image.filepath}}" alt="추가 이미지" class="w-16 h-16 cursor-pointer thumbnail-image">
-        </div>
       </div>
     </div>
 
@@ -135,6 +121,25 @@
       </div>
     </div>
   </div>
+
+  <!-- 추가 이미지 및 설명 -->
+  <div class="mt-8">
+    <h3 class="text-2xl font-semibold mb-4">추가 이미지 및 설명</h3>
+    <div class="flex flex-wrap justify-between items-start">
+      <!-- 추가 이미지 출력 -->
+      <div class="w-full lg:w-1/2 mb-4">
+        <div th:each="imagePath : ${product.images}">
+          <img th:src="@{${imagePath}}" alt="추가 이미지" class="w-full h-auto mb-4">
+        </div>
+      </div>
+      <div class="w-full lg:w-1/2 mb-4">
+        <div th:each="desc : ${product.descriptions}">
+          <p th:text="${desc}" class="mb-2 text-gray-700"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 </body>

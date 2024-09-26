@@ -53,14 +53,14 @@ public class ProductController {
         for (Product product : latestProducts) {
             String formattedPrice = formatter.format(product.getPrice());
             formattedPrices.put(product.getId(), formattedPrice);
-            System.out.println("Product price: " + product.getPrice() + " -> Formatted: " + formattedPrice);
+
         }
 
         // 추천 상품 가격 포맷팅
         for (Product product : recommendedProducts) {
             String formattedPrice = formatter.format(product.getPrice());
             formattedPrices.put(product.getId(), formattedPrice);
-            System.out.println("Recommended Product price: " + product.getPrice() + " -> Formatted: " + formattedPrice);
+
         }
 
         // 모델에 추가
@@ -90,6 +90,7 @@ public class ProductController {
         return "market/detail";
     }
 
+
     @GetMapping("/create")
     public String showCreateForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         if (userDetails == null) {
@@ -115,7 +116,7 @@ public class ProductController {
             @RequestParam("descriptions") List<String> descriptions, // 설명 리스트 받기
             @RequestParam("category") int categoryNumber,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam("images") List<MultipartFile> images,  // 'images[]'로 수정
             @RequestParam(value = "isRecommended", required = false) boolean isRecommended,
             @AuthenticationPrincipal UserDetails userDetails,
             Model model) throws IOException {

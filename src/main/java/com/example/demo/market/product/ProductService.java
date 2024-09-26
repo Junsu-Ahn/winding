@@ -1,6 +1,7 @@
 package com.example.demo.market.product;
 
 import com.example.demo.member.entity.Member;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductService {
     private final ProductRepository productRepository;
 
@@ -32,45 +34,46 @@ public class ProductService {
                               MultipartFile thumbnail, List<MultipartFile> imageFiles,
                               Member member, boolean isRecommended) throws IOException {
 
-        // Product 객체 생성
         Product product = new Product();
         product.setName(name);
-        product.setDescriptions(descriptions);
         product.setPrice(price);
+        product.setDescriptions(descriptions);
         product.setCategoryNumber(categoryNumber);
         product.setMember(member);
-        product.setRecommended(isRecommended);  // 추천 상품 여부 설정
+        product.setRecommended(isRecommended);
 
-        // 썸네일 이미지 처리 (무조건 입력)
+        // 썸네일 저장 처리
         if (thumbnail != null && !thumbnail.isEmpty()) {
-            String originalThumbnailName = thumbnail.getOriginalFilename();  // 원본 파일명
-            String savedThumbnail = saveImageFile(thumbnail);  // 파일 저장
-            product.setThumbnailFilename(originalThumbnailName);  // 원본 파일명 저장
-            product.setThumbnailFilepath("/imagefile/post/" + savedThumbnail);  // 파일 경로 저장
+            String originalThumbnailName = thumbnail.getOriginalFilename();
+            String savedThumbnail = saveImageFile(thumbnail);
+            product.setThumbnailFilename(originalThumbnailName);
+            product.setThumbnailFilepath("/imagefile/post/" + savedThumbnail);
         }
 
-        // 추가 이미지 파일 처리
+        // 추가 이미지 파일 처리 (List로 처리)
         if (imageFiles != null && !imageFiles.isEmpty()) {
+            System.out.println("Number of image files: " + imageFiles.size());
             for (MultipartFile imageFile : imageFiles) {
                 if (!imageFile.isEmpty()) {
-                    String originalFilename = imageFile.getOriginalFilename();
                     String savedFilename = saveImageFile(imageFile);
-
-                    // 이미지 파일 처리 로직 추가
-                    ProductImage productImage = new ProductImage();
-                    productImage.setFilename(originalFilename);  // 원본 파일명 저장
-                    productImage.setFilepath("/imagefile/product/" + savedFilename);
-
-                    // Product에 이미지 추가
-                    product.addImage(productImage);
+                    System.out.println("Saved Filename: " + savedFilename);
+                    product.getImages().add("/imagefile/post/" + savedFilename);
+                } else {
+                    System.out.println("Empty image file detected");
                 }
             }
+        } else {
+            System.out.println("No image files to process.");
         }
 
-        System.out.println("썸네일 경로: " + product.getThumbnailFilepath());
-        System.out.println("추가 이미지 경로: " + product.getImages());
-        productRepository.save(product);  // 다시 저장하여 이미지 업데이트
+        // 디버깅용 로그
+        System.out.println("Product Images Before Save: " + product.getImages());
+
+        productRepository.save(product);
     }
+
+
+
 
     // 이미지 파일을 저장하는 유틸리티 함수
     private String saveImageFile(MultipartFile file) throws IOException {
@@ -82,22 +85,16 @@ public class ProductService {
         String filePath = Paths.get(fileDirPath, savedFilename).toString();
         File dest = new File(filePath);
 
-        // 디버깅 로그 추가
-        System.out.println("파일 저장 경로: " + filePath);
-
-        // 파일 경로가 존재하지 않으면 디렉토리 생성
         if (!dest.getParentFile().exists()) {
-            boolean created = dest.getParentFile().mkdirs();
-            if (!created) {
-                System.err.println("디렉토리 생성 실패: " + dest.getParentFile().getPath());
-                return null;
-            }
+            dest.getParentFile().mkdirs();
         }
-
-        // 파일 저장
+        System.out.println("파일 저장 경로: " + filePath);
+        System.out.println("원본 파일명: " + originalFilename);
+        System.out.println("저장된 파일명: " + savedFilename);
         file.transferTo(dest);
         return savedFilename;
     }
+
 
     public List<Product> getProductsByCategory(Integer categoryNumber) {
         return productRepository.findByCategoryNumber(categoryNumber);
