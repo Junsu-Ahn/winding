@@ -44,6 +44,56 @@
       updateTotalPrice();
     });
 
+     // 찜하기 요청
+function addToWishlist(productId) {
+    const parsedProductId = parseInt(productId, 10);  // productId를 10진수로 변환
+    fetch(`/market/wishlist/add/${parsedProductId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('상품이 찜 목록에 추가되었습니다.');
+        } else {
+            alert('찜 목록 추가 중 오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+
+    // 장바구니 요청
+function addToCart(productId) {
+    // 문자열로 전달된 productId를 정수로 변환
+    const parsedProductId = parseInt(productId, 10);
+    if (isNaN(parsedProductId)) {
+        alert('잘못된 상품 ID입니다.');
+        return;
+    }
+
+    fetch(`/market/cart/add/${parsedProductId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('상품이 장바구니에 추가되었습니다.');
+        } else {
+            alert('장바구니 추가 중 오류가 발생했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+
   </script>
 </head>
 <body>
@@ -53,7 +103,7 @@
     <a href="#" class="hover:underline">마일리지 충전</a>
     <a href="#" class="hover:underline">마일리지 출금</a>
     <a href="#" class="hover:underline">중고 장터</a>
-    <a href="#" class="hover:underline">마이페이지</a>
+    <a href="/member/mypage" class="hover:underline">마이페이지</a>
   </div>
 </nav>
 
@@ -108,16 +158,24 @@
         </button>
 
         <!-- 장바구니 버튼 -->
-        <button class="col-span-1 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100">
+        <button class="col-span-1 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
+                th:onclick="'addToCart(' + ${product.id} + ')'">
           장바구니
         </button>
-      </div>
 
-      <!-- 찜하기 버튼 -->
-      <div class="mt-4">
-        <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100">
+        <!-- 찜하기 버튼 -->
+        <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100"
+                th:onclick="'addToWishlist(' + ${product.id} + ')'">
           ❤ 찜하기
         </button>
+
+
+
+        <!-- 뒤로가기 버튼 (목록으로) -->
+        <a href="javascript:void(0);" onclick="history.back();" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-100">
+          ⬅ 뒤로가기 (목록으로)
+        </a>
+
       </div>
     </div>
   </div>
@@ -125,21 +183,42 @@
   <!-- 추가 이미지 및 설명 -->
   <div class="mt-8">
     <h3 class="text-2xl font-semibold mb-4">추가 이미지 및 설명</h3>
-    <div class="flex flex-wrap justify-between items-start">
-      <!-- 추가 이미지 출력 -->
-      <div class="w-full lg:w-1/2 mb-4">
-        <div th:each="imagePath : ${product.images}">
-          <img th:src="@{${imagePath}}" alt="추가 이미지" class="w-full h-auto mb-4">
+
+    <!-- 이미지가 있을 경우에만 출력 -->
+    <div th:if="${product.images != null and !product.images.isEmpty()}">
+      <div th:each="imagePath, iterStat : ${product.images}" class="flex flex-wrap justify-between items-start mb-8">
+        <!-- 왼쪽: 이미지 출력, 크기를 절반으로 조정 -->
+        <div class="w-full lg:w-1/2 mb-4">
+          <div class="w-1/2 h-full flex items-start justify-center bg-transparent">
+            <img th:src="@{${imagePath}}" alt="추가 이미지" class="w-full h-auto">
+          </div>
         </div>
-      </div>
-      <div class="w-full lg:w-1/2 mb-4">
-        <div th:each="desc : ${product.descriptions}">
-          <p th:text="${desc}" class="mb-2 text-gray-700"></p>
+
+        <!-- 설명이 있을 경우에만 출력 -->
+        <div th:if="${product.descriptions != null and !product.descriptions.isEmpty()}" class="w-full lg:w-1/2 mb-4">
+          <div class="w-full h-full flex items-start justify-start bg-transparent">
+            <!-- 인덱스를 사용해 설명을 동기화, 왼쪽 정렬 적용 -->
+            <p th:text="${product.descriptions[iterStat.index]}" class="mb-2 text-gray-700 text-left"></p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
+    <!-- 설명만 있을 경우 출력 -->
+    <div th:if="${product.images == null or product.images.isEmpty()} and ${product.descriptions != null and !product.descriptions.isEmpty()}">
+      <div th:each="desc, iterStat : ${product.descriptions}" class="flex justify-start items-start mb-8">
+        <!-- 오른쪽: 설명만 출력 -->
+        <div class="w-full lg:w-1/2 mb-4">
+          <p th:text="${desc}" class="mb-2 text-gray-700 text-left"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 추가 이미지 및 설명이 모두 없을 경우 출력할 내용 -->
+    <div th:if="${(product.images == null or product.images.isEmpty()) and (product.descriptions == null or product.descriptions.isEmpty())}" class="text-gray-500">
+      <p>추가 이미지와 설명이 없습니다.</p>
+    </div>
+  </div>
 </div>
 
 </body>

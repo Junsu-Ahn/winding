@@ -4,10 +4,9 @@ import com.example.demo.member.entity.Member;
 import com.example.demo.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,12 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -37,36 +31,25 @@ public class ProductController {
 
     @GetMapping("/main")
     public String mainPage(Model model) {
-        // 최근 등록된 일반 상품만 조회
         List<Product> latestProducts = productService.findLatestProducts();
-
-        // 추천 상품만 조회
         List<Product> recommendedProducts = productService.findRecommendedProducts();
 
-        // 가격을 포맷팅해서 저장할 맵을 준비
-        Map<Long, String> formattedPrices = new HashMap<>(); // key는 product의 ID, value는 포맷된 가격
-
-        // 포맷터 생성
+        Map<Long, String> formattedPrices = new HashMap<>();
         DecimalFormat formatter = new DecimalFormat("###,###");
 
-        // 각 상품의 가격을 포맷하고 맵에 저장
         for (Product product : latestProducts) {
             String formattedPrice = formatter.format(product.getPrice());
             formattedPrices.put(product.getId(), formattedPrice);
-
         }
 
-        // 추천 상품 가격 포맷팅
         for (Product product : recommendedProducts) {
             String formattedPrice = formatter.format(product.getPrice());
             formattedPrices.put(product.getId(), formattedPrice);
-
         }
 
-        // 모델에 추가
         model.addAttribute("latestProducts", latestProducts);
         model.addAttribute("recommendedProducts", recommendedProducts);
-        model.addAttribute("formattedPrices", formattedPrices); // 포맷된 가격을 모델에 추가
+        model.addAttribute("formattedPrices", formattedPrices);
 
         return "market/market";
     }
@@ -80,62 +63,55 @@ public class ProductController {
 
     @GetMapping("/detail/{id}")
     public String detail(@PathVariable("id") Long id, Model model) {
-        Product product = productService.getProductById(id);
+        Product product = productService.getProductById(id).orElse(null);
         if (product == null) {
-            return "redirect:/market/list";  // 상품이 없을 경우 목록으로 리다이렉트
+            return "redirect:/market/list";
         }
 
         productService.displayProductDetails(product, model);
-
         return "market/detail";
     }
-
 
     @GetMapping("/create")
     public String showCreateForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         if (userDetails == null) {
-            return "redirect:/member/login"; // 로그인 페이지로 리다이렉트
+            return "redirect:/member/login";
         }
 
         Optional<Member> optionalMember = memberService.findByUsername(userDetails.getUsername());
 
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
-            model.addAttribute("member", member); // Member 객체를 모델에 추가
+            model.addAttribute("member", member);
         } else {
-            return "redirect:/error"; // 오류 페이지로 리다이렉트
+            return "redirect:/error";
         }
 
-        return "market/createProduct"; // 상품 등록 페이지로 이동
+        return "market/createProduct";
     }
 
     @PostMapping("/create")
     public String createProduct(
             @RequestParam("name") String name,
             @RequestParam("price") int price,
-            @RequestParam("descriptions") List<String> descriptions, // 설명 리스트 받기
+            @RequestParam(value = "descriptions", required = false) List<String> descriptions,
             @RequestParam("category") int categoryNumber,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
-            @RequestParam("images") List<MultipartFile> images,  // 'images[]'로 수정
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "isRecommended", required = false) boolean isRecommended,
             @AuthenticationPrincipal UserDetails userDetails,
             Model model) throws IOException {
 
         try {
-            // 로그인한 사용자 정보로 Member 설정
             Member member = memberService.findByUsername(userDetails.getUsername())
                     .orElseThrow(() -> new RuntimeException("Member not found"));
 
-            // 관리자인 경우에만 추천 상품으로 설정 가능
             if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-                isRecommended = false;  // 일반 사용자는 추천 상품 등록 불가
+                isRecommended = false;
             }
 
-            // 상품 등록 처리
             productService.createProduct(name, descriptions, price, categoryNumber, thumbnail, images, member, isRecommended);
-
-            return "redirect:/market/main";  // 상품 리스트로 리다이렉트
-
+            return "redirect:/market/main";
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("errorMessage", "상품 등록 중 오류가 발생했습니다. 다시 시도해주세요.");
@@ -143,30 +119,64 @@ public class ProductController {
         }
     }
 
-
     @GetMapping("/category/{categoryNumber}")
     public String getCategoryProducts(@PathVariable("categoryNumber") Integer categoryNumber, Model model) {
-        // 서비스에서 카테고리별 상품 리스트 가져오기
         List<Product> productList = productService.getProductsByCategory(categoryNumber);
 
-        // 상품이 없으면 빈 리스트를 초기화하여 NullPointerException 방지
         if (productList == null) {
             productList = new ArrayList<>();
         }
 
-        // 모델에 카테고리 번호와 상품 리스트 추가
         model.addAttribute("productList", productList);
         model.addAttribute("categoryNumber", categoryNumber);
 
-        return "market/list"; // list.html로 이동
+        return "market/list";
     }
 
     @GetMapping("/search")
     public String searchProducts(@RequestParam("keyword") String keyword, Model model) {
         List<Product> productList = productService.searchProductsByName(keyword);
         model.addAttribute("productList", productList);
-        model.addAttribute("keyword", keyword); // 검색어를 다시 전달해 UI에 표시
-        return "market/list"; // 검색 결과를 list.html에서 출력
+        model.addAttribute("keyword", keyword);
+        return "market/list";
     }
 
+    @PostMapping("/wishlist/add/{productId}")
+    public ResponseEntity<String> addToWishlist(
+            @PathVariable("productId") Long productId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            Member member = memberService.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Member not found"));
+            Product product = productService.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+
+            memberService.addToWishlist(member, product);
+            return ResponseEntity.ok("Product added to wishlist");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding product to wishlist");
+        }
+    }
+
+    @PostMapping("/cart/add/{productId}")
+    public ResponseEntity<String> addToCart(
+            @PathVariable("productId") Long productId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            Member member = memberService.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Member not found"));
+            Product product = productService.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            memberService.addToCart(member, product);
+            return ResponseEntity.ok("Product added to cart");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding product to cart");
+        }
+    }
 }

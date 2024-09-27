@@ -1,6 +1,7 @@
 package com.example.demo.member.entity;
 
 import com.example.demo.global.base.BaseEntity;
+import com.example.demo.market.product.Product;
 import com.example.demo.post.entity.Post;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,4 +35,24 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member")
     private List<Post> posts;
+
+    // 찜 목록 (상품과 다대다 관계)
+    @ManyToMany
+    @JoinTable(
+            name = "member_wishlist",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private Set<Product> wishlist = new HashSet<>();
+
+    // 장바구니 (상품과 다대다 관계)
+    @ManyToMany
+    @JoinTable(
+            name = "member_cart",
+            joinColumns = @JoinColumn(name = "member_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private Set<Product> cart = new HashSet<>();
+
+    private int mileage; // 마일리지 보유량
 }

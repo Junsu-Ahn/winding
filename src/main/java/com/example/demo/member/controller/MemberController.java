@@ -244,6 +244,33 @@ public class MemberController {
         return "redirect:/";
     }
 
+    // 마이페이지
+    @GetMapping("/mypage")
+    public String myPage(Model model, Authentication authentication) {
+        // 로그인된 사용자 이름 가져오기
+        String username = authentication.getName();
+
+        // 사용자 정보를 Optional로 처리
+        Optional<Member> optionalMember = memberService.findByUsername(username);
+
+        // 사용자가 존재하지 않을 경우 예외 처리
+        if (optionalMember.isEmpty()) {
+            throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
+        }
+
+        // Optional에서 Member 객체 가져오기
+        Member member = optionalMember.get();
+
+        // 모델에 member 데이터를 추가
+        model.addAttribute("member", member);
+        model.addAttribute("wishlist", member.getWishlist()); // 찜 목록
+        model.addAttribute("cart", member.getCart());         // 장바구니 목록
+        model.addAttribute("mileage", member.getMileage());   // 마일리지
+
+        return "member/mypage";  // mypage.html 템플릿으로 이동
+    }
+
+
     // 인증된 사용자의 이름을 반환하는 유틸리티 메서드
     private String getAuthenticatedUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -3,6 +3,7 @@ package com.example.demo.member.service;
 import com.example.demo.global.email.service.EmailService;
 import com.example.demo.global.exception.DataNotFoundException;
 import com.example.demo.global.exception.PasswordMismatchException;
+import com.example.demo.market.product.Product;
 import com.example.demo.member.entity.Member;
 import com.example.demo.member.entity.Role;
 import com.example.demo.member.repository.MemberRepository;
@@ -188,5 +189,15 @@ public class MemberService {
     public Member save(Member member) {
         // Member 객체를 저장 (새로 추가되거나 기존 데이터 업데이트)
         return memberRepository.save(member);
+    }
+
+    public void addToWishlist(Member member, Product product) {
+        member.getWishlist().add(product);
+        memberRepository.save(member);
+    }
+
+    public void addToCart(Member member, Product product) {
+        member.getCart().add(product);
+        memberRepository.save(member);
     }
 }

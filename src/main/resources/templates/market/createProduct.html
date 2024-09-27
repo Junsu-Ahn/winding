@@ -87,7 +87,7 @@
 function prepareFormForSubmission() {
     const formData = new FormData();
 
-    // 썸네일 추가
+    // 썸네일 추가 (선택적)
     const thumbnailInput = document.getElementById('thumbnail');
     if (thumbnailInput.files.length > 0) {
         formData.append('thumbnail', thumbnailInput.files[0]);
@@ -98,22 +98,27 @@ function prepareFormForSubmission() {
     formData.append('price', document.getElementById('price').value);
     formData.append('category', document.getElementById('category').value);
 
-    // 설명 필드 추가 (여러 설명이 있을 수 있음)
+    // 설명 필드 추가 (여러 설명이 있을 수 있음, 선택적)
     const descriptions = document.querySelectorAll('textarea[name="descriptions[]"]');
     descriptions.forEach((desc) => {
-        formData.append('descriptions', desc.value);  // 배열 없이 'descriptions'로 추가
+        if (desc.value.trim() !== '') {  // 빈 설명 제외
+            formData.append('descriptions', desc.value);
+        }
     });
 
-    // 추가 이미지 필드 추가 (여러 이미지)
+    // 추가 이미지 필드 추가 (여러 이미지, 선택적)
     const imageInputs = document.querySelectorAll('input[name="images"]');
     imageInputs.forEach((input) => {
         if (input.files.length > 0) {
-            formData.append('images', input.files[0]);  // 배열 없이 'images'로 추가
+            Array.from(input.files).forEach(file => {
+                formData.append('images', file);
+            });
         }
     });
 
     return formData;
 }
+
 
 // 폼 제출 시 FormData를 만들어 전송
 function handleSubmit(event) {
@@ -168,7 +173,7 @@ function handleSubmit(event) {
     <!-- 썸네일 이미지 업로드 -->
     <div class="mb-4">
         <label for="thumbnail" class="block text-gray-700">썸네일 이미지</label>
-        <input type="file" id="thumbnail" name="thumbnail" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" onchange="previewThumbnail(event)" required>
+        <input type="file" id="thumbnail" name="thumbnail" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" onchange="previewThumbnail(event)">
         <img id="thumbnail-preview" src="#" alt="썸네일 미리보기" class="mt-2 hidden w-32 h-32 object-cover">
     </div>
 
@@ -178,16 +183,17 @@ function handleSubmit(event) {
             <h3 class="text-lg font-semibold mb-2">사진 및 설명 추가</h3>
             <div class="flex items-center">
                 <div class="w-1/2">
-                    <textarea id="description-1" name="descriptions[]" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요"></textarea>
+                    <textarea id="description-1" name="descriptions[]" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요 (선택사항)"></textarea>
                 </div>
                 <div class="ml-4">
                     <!-- 추가 이미지 업로드 -->
-                    <label for="image-1" class="block text-gray-700">이미지</label>
+                    <label for="image-1" class="block text-gray-700">이미지 (선택사항)</label>
                     <input type="file" id="image-1" name="images" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" multiple onchange="previewMultipleImages(event, this)">
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- 단계 추가 버튼 -->
     <div class="mb-6 flex justify-center">
