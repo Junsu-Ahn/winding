@@ -7,9 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
     <!-- 다음 주소 검색 API -->
     <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
 
@@ -21,69 +19,191 @@
 
     <!-- JavaScript 파일을 마지막에 로드 -->
     <script src="/js/Postjs/createPost.js" defer></script>
+
+    <!-- 외부 CSS 연결 -->
+    <link rel="stylesheet" href="css/createPost.css">
+
+    <!-- 썸네일 및 추가 이미지 미리보기 스크립트 추가 -->
+    <script>
+        // 다음 주소 검색 함수
+        function execDaumPostcode(field) {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    let addr = ''; // 주소 변수
+
+                    // 사용자가 도로명 주소를 선택했을 경우
+                    if (data.userSelectedType === 'R') {
+                        addr = data.roadAddress;
+                    } else { // 사용자가 지번 주소를 선택했을 경우
+                        addr = data.jibunAddress;
+                    }
+
+                    // 해당 입력 필드에 주소 값 설정
+                    document.getElementById(field).value = addr;
+
+                    // 추출한 좌표 데이터를 이용해 지도에 마커를 표시하는 로직 추가 가능
+                }
+            }).open();
+        }
+
+        // 썸네일 이미지 미리보기 기능
+        function previewThumbnail(event) {
+            const thumbnailPreview = document.getElementById('thumbnail-preview');
+            const file = event.target.files[0];
+            if (file) {
+                thumbnailPreview.src = URL.createObjectURL(file);
+                thumbnailPreview.onload = function () {
+                    URL.revokeObjectURL(thumbnailPreview.src);
+                }
+            } else {
+                thumbnailPreview.src = "https://via.placeholder.com/150";
+            }
+        }
+
+        // 추가 이미지 미리보기 기능
+        function previewMultipleImages(event, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.error(`Container with id ${containerId} not found.`);
+                return;
+            }
+
+            const files = event.target.files;
+
+            // 기존 이미지 미리보기 초기화
+            container.innerHTML = '';
+
+            // 선택된 파일들에 대한 미리보기 추가
+            if (files) {
+                Array.from(files).forEach(file => {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.style.width = '100px';
+                    img.style.height = '100px';
+                    img.style.objectFit = 'cover';
+                    img.style.marginRight = '10px';
+                    img.style.marginBottom = '10px';
+
+                    // 이미지 로드 완료 후 URL 객체 해제
+                    img.onload = function () {
+                        URL.revokeObjectURL(img.src);
+                    };
+
+                    // 이미지 컨테이너에 추가
+                    container.appendChild(img);
+                });
+            }
+        }
+
+        // 추가 이미지 및 설명 단계 추가 기능
+        document.addEventListener('DOMContentLoaded', function () {
+            const addStepBtn = document.getElementById('add-step-btn');
+            const stepsContainer = document.getElementById('steps-container');
+
+            addStepBtn.addEventListener('click', function () {
+                const stepCount = stepsContainer.children.length + 1; // 현재 추가된 단계 수 기반 번호 설정
+                const newStep = `
+                    <div class="mb-4" id="step-${stepCount}">
+            <h3 class="text-lg font-semibold mb-2">사진 및 설명 추가 ${stepCount}</h3>
+            <div class="flex items-center">
+                <div class="w-1/2">
+                    <textarea id="description-${stepCount}" name="imageDescriptions" class="w-full border border-gray-300 p-2 rounded mt-1" rows="3" placeholder="상세 설명을 입력하세요"></textarea>
+                </div>
+                <div class="ml-4">
+                    <label for="image-${stepCount}" class="block text-gray-700">이미지</label>
+                    <input type="file" id="image-${stepCount}" name="images" class="w-full border border-gray-300 p-2 rounded mt-1" accept="image/*" multiple onchange="previewMultipleImages(event, 'preview-container-${stepCount}')">
+                    <!-- 미리보기 컨테이너 추가 -->
+                    <div id="preview-container-${stepCount}" class="mt-2"></div>
+                </div>
+            </div>
+            <button type="button" class="text-red-500 mt-2" onclick="removeStep(${stepCount})">삭제</button>
+        </div>
+                `;
+                stepsContainer.insertAdjacentHTML('beforeend', newStep); // 새 단계 추가
+            });
+        });
+
+        // 단계 삭제 함수
+        function removeStep(stepNum) {
+            const step = document.getElementById(`step-${stepNum}`);
+            step.remove();
+
+            // 삭제 후 번호 재정렬
+            const steps = document.querySelectorAll('#steps-container > div');
+            steps.forEach((stepElement, index) => {
+                stepElement.id = `step-${index + 1}`;
+                stepElement.querySelector('h3').textContent = `사진 및 설명 추가 ${index + 1}`;
+                stepElement.querySelector('textarea').id = `description-${index + 1}`;
+                stepElement.querySelector('input[type="file"]').id = `image-${index + 1}`;
+                stepElement.querySelector('div[id^="preview-container"]').id = `preview-container-${index + 1}`;
+            });
+        }
+    </script>
 </head>
 <body style="background-color: #f0f0f0;">
-<div class="container mt-5">
-    <h1>게시글 작성</h1>
-    <form id="routeForm" method="post" action="/posts/create" enctype="multipart/form-data">
-        <input type="hidden" name="memberId" th:value="${member.id}">
+<div class="container">
+    <div id="form-container">
+        <h1>게시글 작성</h1>
+        <form id="routeForm" method="post" action="/posts/create" enctype="multipart/form-data">
+            <input type="hidden" name="memberId" th:value="${member.id}">
 
-        <!-- 제목 -->
-        <div class="form-group">
-            <label for="title">제목</label>
-            <input type="text" class="form-control" id="title" name="title" placeholder="제목을 입력하세요" required>
-        </div>
+            <!-- 제목 -->
+            <div class="form-group">
+                <label for="title">제목</label>
+                <input type="text" class="form-control" id="title" name="title" placeholder="제목을 입력하세요" required>
+            </div>
 
-        <!-- 내용 -->
-        <div class="form-group">
-            <label for="description">내용</label>
-            <textarea class="form-control" id="description" name="description" rows="4" placeholder="내용을 입력하세요" required></textarea>
-        </div>
+            <!-- 내용 -->
+            <div class="form-group">
+                <label for="description">내용</label>
+                <textarea class="form-control" id="description" name="description" rows="4" placeholder="내용을 입력하세요" required></textarea>
+            </div>
 
-        <!-- 출발지 -->
-        <div class="form-group">
-            <label for="departure">출발지</label>
-            <input type="text" class="form-control" id="departure" name="departure" placeholder="출발지 주소" required readonly>
-            <input type="hidden" id="departureLat" name="departureLat">
-            <input type="hidden" id="departureLng" name="departureLng">
-            <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('departure')">주소 검색</button>
-        </div>
+            <!-- 출발지 -->
+            <div class="form-group">
+                <label for="departure">출발지</label>
+                <input type="text" class="form-control" id="departure" name="departure" placeholder="출발지 주소" required readonly>
+                <input type="hidden" id="departureLat" name="departureLat">
+                <input type="hidden" id="departureLng" name="departureLng">
+                <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('departure')">주소 검색</button>
+            </div>
 
-        <!-- 목적지 -->
-        <div class="form-group">
-            <label for="destination">목적지</label>
-            <input type="text" class="form-control" id="destination" name="destination" placeholder="목적지 주소" required readonly>
-            <input type="hidden" id="destinationLat" name="destinationLat">
-            <input type="hidden" id="destinationLng" name="destinationLng">
-            <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('destination')">주소 검색</button>
-        </div>
-        <!-- 경유지 추가 버튼 및 입력 필드 -->
-        <div id="waypoints-container" class="form-group mt-3">
-            <label>경유지 추가</label>
-            <button type="button" class="btn btn-secondary" onclick="addWaypoint()">+ 경유지 추가</button>
-        </div>
+            <!-- 목적지 -->
+            <div class="form-group">
+                <label for="destination">목적지</label>
+                <input type="text" class="form-control" id="destination" name="destination" placeholder="목적지 주소" required readonly>
+                <input type="hidden" id="destinationLat" name="destinationLat">
+                <input type="hidden" id="destinationLng" name="destinationLng">
+                <button type="button" class="btn btn-secondary mt-2" onclick="execDaumPostcode('destination')">주소 검색</button>
+            </div>
 
-        <!-- 지도 -->
-        <div id="map-container" style="width: 50%; height: 400px; float: left;">
-            <div id="map" style="width: 100%; height: 100%;"></div>
-        </div>
+            <!-- 경유지 추가 버튼 및 입력 필드 -->
+            <div id="waypoints-container" class="form-group mt-3">
+                <label>경유지 추가</label>
+                <button type="button" class="btn btn-secondary" onclick="addWaypoint()">+ 경유지 추가</button>
+            </div>
 
-        <!-- 썸네일 이미지 업로드 및 미리보기 -->
-        <div class="form-group mt-3">
-            <label for="thumbnail">썸네일 이미지 업로드</label>
-            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" onchange="previewImage(this, 'thumbnail-preview')">
-            <img id="thumbnail-preview" src="https://via.placeholder.com/150" alt="썸네일 미리보기" style="width: 182px; height: 182px; object-fit: cover; margin-top: 10px;">
-        </div>
+            <!-- 썸네일 이미지 업로드 및 미리보기 -->
+            <div class="form-group mt-3">
+                <label for="thumbnail">썸네일 이미지 업로드</label>
+                <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" onchange="previewThumbnail(event)">
+                <img id="thumbnail-preview" src="https://via.placeholder.com/150" alt="썸네일 미리보기" style="width: 150px; height: 150px; object-fit: cover; margin-top: 10px;">
+            </div>
 
-        <!-- 추가 이미지 업로드 및 설명란 -->
-        <div id="additional-images-container" class="mt-3">
-            <label>추가 이미지 업로드 및 설명</label>
-        </div>
-        <button type="button" class="btn btn-secondary mt-2" id="addImageBtn">+ 이미지 추가</button>
+            <!-- 추가 이미지 및 설명 추가 -->
+            <div id="steps-container"></div>
+            <button type="button" id="add-step-btn" class="btn btn-secondary mt-3">+ 사진 및 설명 추가</button>
 
-        <!-- 확인 버튼 추가 -->
-        <button type="submit" class="btn btn-primary mt-2">게시글 등록</button>
-    </form>
+            <div id="submit-container" class="text-right mt-4">
+                <button type="submit" class="btn submit-button">게시글 등록</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 지도 및 추가 이미지 업로드 -->
+    <div id="map-container" style="width: 50%; height: 400px; float: right;">
+        <div id="map" style="width: 100%; height: 100%;"></div>
+    </div>
 </div>
 </body>
 </html>

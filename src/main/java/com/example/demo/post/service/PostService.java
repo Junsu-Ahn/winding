@@ -89,25 +89,39 @@ public class PostService {
 
         // 추가 이미지 파일 및 설명 처리
         if (imageFiles != null && !imageFiles.isEmpty()) {
+            System.out.println("받은 이미지 파일 개수: " + imageFiles.size());
+
             for (int i = 0; i < imageFiles.size(); i++) {
                 MultipartFile imageFile = imageFiles.get(i);
-                String descriptions = (imageDescriptions != null && i < imageDescriptions.size()) ? imageDescriptions.get(i) : "";
+                String descriptionForImage = (imageDescriptions != null && i < imageDescriptions.size()) ? imageDescriptions.get(i) : "";
+
+                System.out.println("이미지 파일명: " + imageFile.getOriginalFilename());
+                System.out.println("이미지 설명: " + descriptionForImage);
 
                 if (!imageFile.isEmpty()) {
                     String savedFilename = saveImageFile(imageFile);
+                    if (savedFilename == null) {
+                        System.err.println("이미지 저장 실패: " + imageFile.getOriginalFilename());
+                        continue;
+                    }
 
+                    // PostImage 객체 생성 및 저장 처리
                     PostImage postImage = new PostImage();
                     postImage.setFilename(savedFilename);
                     postImage.setFilepath("/imagefile/post/" + savedFilename);
-                    postImage.setDescriptions(descriptions);
+                    postImage.setDescriptions(descriptionForImage);
+                    postImage.setPost(post);
 
-                    post.addImage(postImage);  // 이미지 추가
+                    post.addImageWithDescription(postImage, descriptionForImage);
                 }
             }
+        } else {
+            System.out.println("이미지 파일이 전송되지 않았습니다.");
         }
 
         postRepository.save(post);  // Post 저장
     }
+
 
     // 이미지 파일을 저장하는 유틸리티 함수
     private String saveImageFile(MultipartFile file) throws IOException {

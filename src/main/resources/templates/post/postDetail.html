@@ -9,6 +9,43 @@
     <!-- 네이버 지도 API 추가 -->
     <script th:src="'https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + ${naverClientId}"></script>
     <script th:src="@{/posts/js/Postjs/postDetail.js}"></script>
+
+    <style>
+        /* 지도 고정 스타일 */
+        .map {
+            position: fixed;
+            top: 20px; /* 상단으로부터의 거리 */
+            right: 20px; /* 우측으로부터의 거리 */
+            width: 300px; /* 지도 너비 */
+            height: 400px; /* 지도 높이 */
+            z-index: 1000; /* 다른 요소들보다 위에 보이도록 설정 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .container {
+            margin-right: 340px; /* 고정된 지도 공간만큼 컨테이너 오른쪽 여백 추가 */
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .images-grid img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .images-grid p {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
 
@@ -38,9 +75,9 @@
     <div class="images-section">
         <h3>등록된 사진들</h3>
         <div class="images-grid">
-            <div th:each="image : ${post.images}">
+            <div th:each="image, iterStat : ${post.images}">
                 <img th:src="@{${image.filepath}}" alt="등록된 이미지" style="max-width:100%; height:auto;">
-                <p th:text="${image.descriptions}">이미지 설명</p>
+                <p th:text="${post.additionalDescriptions[iterStat.index]}">이미지 설명</p>
             </div>
         </div>
     </div>

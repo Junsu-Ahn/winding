@@ -121,18 +121,36 @@ public class Post extends BaseEntity {
     public void setViewCount(int viewCount) {
         this.views = viewCount;
     }
+
     // 이미지 및 설명을 위한 리스트 추가
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImage> images = new ArrayList<>();
 
+    // 설명을 위한 필드 추가
+    @ElementCollection
+    @CollectionTable(name = "post_descriptions", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "description")
+    private List<String> additionalDescriptions = new ArrayList<>();
+
+    // 이미지 추가 메서드
     public void addImage(PostImage image) {
         this.images.add(image);
         image.setPost(this);
     }
 
+    // 이미지 및 설명 추가 메서드
+    public void addImageWithDescription(PostImage image, String description) {
+        this.images.add(image);
+        this.additionalDescriptions.add(description);
+        image.setPost(this);
+    }
+
+    // 모든 이미지와 설명 삭제 메서드
     public void clearImages() {
         this.images.clear();
+        this.additionalDescriptions.clear();
     }
+
 }
 
 

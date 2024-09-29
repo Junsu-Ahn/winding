@@ -78,7 +78,7 @@ public class PostController {
             Model model) throws IOException {
 
         try {
-            // 썸네일과 다른 이미지 처리 로직은 PostService에서 처리
+            // 게시글 생성 로직을 PostService에서 처리
             postService.createPost(title, description, departure, departureLat, departureLng, destination, destinationLat,
                     destinationLng, waypoints, waypointLats, waypointLngs, userDetails.getUsername(),
                     thumbnail, images, imageDescriptions, memberService.findById(memberId)
@@ -90,6 +90,7 @@ public class PostController {
         } catch (Exception e) {
             // 에러가 발생하면 콘솔에 에러 출력
             e.printStackTrace();
+
             // 에러 메시지를 모델에 추가하여 createPost 페이지에 전달
             model.addAttribute("errorMessage", "게시물 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
 
@@ -105,13 +106,23 @@ public class PostController {
             model.addAttribute("waypoints", waypoints);
             model.addAttribute("waypointLats", waypointLats);
             model.addAttribute("waypointLngs", waypointLngs);
+
+            // 썸네일 및 이미지 정보 복구
             model.addAttribute("thumbnail", thumbnail);
             model.addAttribute("images", images);
             model.addAttribute("imageDescriptions", imageDescriptions);
 
+            // 이미지 설명도 오류 발생 시 복구하여 사용자에게 표시
+            if (imageDescriptions != null && !imageDescriptions.isEmpty()) {
+                for (int i = 0; i < imageDescriptions.size(); i++) {
+                    model.addAttribute("imageDescription" + i, imageDescriptions.get(i));
+                }
+            }
+
             return "post/createPost"; // 오류 발생 시 createPost 페이지로 다시 이동
         }
     }
+
 
     @GetMapping("/list")
     public String getAllPosts(Model model) {
