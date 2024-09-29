@@ -63,7 +63,7 @@
 * 관리자 기능
 
 ## 🔗 ER - Diagram
-# <img src="https://github.com/user-attachments/assets/30fdbf38-ea32-47d0-aa21-3130b0107ef3">
+# <img src="https://github.com/user-attachments/assets/84117022-5e1d-452d-8f44-eec4f293400b">
 
 ## 📌 페이지 기능 소개
 ### 메인화면
