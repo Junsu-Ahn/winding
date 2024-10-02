@@ -116,6 +116,14 @@ function prepareFormForSubmission() {
         }
     });
 
+    // 추천 상품 체크박스 추가 (관리자만 보이므로 해당 요소 존재 여부 확인)
+    const isRecommendedInput = document.getElementById('isRecommended');
+    if (isRecommendedInput && isRecommendedInput.checked) {
+        formData.append('isRecommended', 'true');
+    } else {
+        formData.append('isRecommended', 'false');
+    }
+
     return formData;
 }
 
@@ -137,6 +145,14 @@ function handleSubmit(event) {
         }
     }).catch(error => console.error('Error:', error));
 }
+        document.addEventListener('DOMContentLoaded', function () {
+        const userHasAdminRole = /*[[${#authorization.expression('hasRole("ROLE_ADMIN")')}]]*/ false;  // Spring Security로 관리자 권한 확인
+
+        if (userHasAdminRole) {
+            const recommendSection = document.getElementById('recommend-section');
+            recommendSection.classList.remove('hidden');
+        }
+    });
     </script>
 </head>
 <body>
@@ -198,6 +214,12 @@ function handleSubmit(event) {
     <!-- 단계 추가 버튼 -->
     <div class="mb-6 flex justify-center">
         <button type="button" id="add-step-btn" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">+ 사진 및 설명 추가</button>
+    </div>
+
+    <!-- 추천 상품 체크박스 (관리자 전용) -->
+    <div th:if="${isAdmin}" class="mb-4">
+        <label for="isRecommended" class="block text-gray-700">추천 상품으로 등록</label>
+        <input type="checkbox" id="isRecommended" name="isRecommended" value="true" class="mt-1">
     </div>
 
     <!-- 등록 버튼 -->

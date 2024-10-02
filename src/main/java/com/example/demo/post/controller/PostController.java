@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -148,7 +149,9 @@ public class PostController {
         }
 
         // 게시물 작성 날짜를 포맷팅
-        String formattedCreateDate = post.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        LocalDateTime createDate = post.getCreateDate();
+        String formattedCreateDate = (createDate != null) ? createDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "날짜 정보 없음";
+
         model.addAttribute("post", post);
         model.addAttribute("formattedCreateDate", formattedCreateDate);
 
@@ -195,7 +198,7 @@ public class PostController {
     }
 
     @GetMapping("/region/{regionCode}")
-    public String getPostsByRegion(@PathVariable int regionCode, Model model) {
+    public String getPostsByRegion(@PathVariable("regionCode") int regionCode, Model model) {
         List<Post> posts = postService.getPostsByRegionCode(regionCode);
 
         // 지역명 설정
@@ -205,6 +208,7 @@ public class PostController {
         model.addAttribute("regionName", regionName); // 지역명 전달
         return "post/postList";  // 템플릿 이름
     }
+
 
     private String getRegionName(int regionCode) {
         switch (regionCode) {
